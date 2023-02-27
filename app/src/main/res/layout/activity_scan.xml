@@ -4,26 +4,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ScanActivity">
 
-    <Button
-        android:id="@+id/btn_query"
+    <SurfaceView
+        android:id="@+id/scan_preview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btntext_main_query"
-        app:layout_constraintBottom_toTopOf="@+id/btn_inventory"
+        app:layout_constraintBottom_toTopOf="@+id/btn_stop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/btn_inventory"
+        android:id="@+id/btn_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btntext_main_inventory"
+        android:layout_marginTop="16dp"
+        android:text="@string/btntext_scan_stop"
+        app:layout_constraintBottom_toTopOf="@+id/btn_scan"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scan_preview" />
+
+    <Button
+        android:id="@+id/btn_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btntext_scan_scan"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_query"/>
-
+        app:layout_constraintTop_toBottomOf="@+id/btn_stop" />
 </androidx.constraintlayout.widget.ConstraintLayout>
