@@ -21,3 +21,12 @@ The app will contian at least 3 activities. The settings fragment will contain c
 - Moving inventory (re-assigning a storage location)
 - Issuing barcode tags to a given inventory
 - Taking physical inventory
+
+### Main Activity
+![Main Activity](main_activity.png)
+
+### Scan Activity
+![Scan Activity](scan_activity.png)
+
+### Settings Fragment
+![Settings Fragment](settings_fragment.png)
