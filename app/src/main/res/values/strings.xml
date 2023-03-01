@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">Inventory Manager</string>
+
+    <!--    main activity-->
     <string name="btntext_main_query">Query</string>
+    <string name="btntext_main_move">Move Inventory</string>
+    <string name="btntext_main_issue">Issue Tags</string>
     <string name="btntext_main_inventory">Take Inventory</string>
+
+    <!--    Scan activity-->
     <string name="btntext_scan_stop">Stop</string>
     <string name="btntext_scan_scan">Scan/Capture</string>
 

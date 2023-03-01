@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/btntext_main_query"
-        app:layout_constraintBottom_toTopOf="@+id/btn_inventory"
+        app:layout_constraintBottom_toTopOf="@+id/btn_move"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,6 +24,26 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_query"/>
+        app:layout_constraintTop_toBottomOf="@+id/btn_issue" />
+
+    <Button
+        android:id="@+id/btn_move"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btntext_main_move"
+        app:layout_constraintBottom_toTopOf="@+id/btn_issue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_query" />
+
+    <Button
+        android:id="@+id/btn_issue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btntext_main_issue"
+        app:layout_constraintBottom_toTopOf="@+id/btn_inventory"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_move" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
