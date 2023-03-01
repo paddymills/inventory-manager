@@ -2,28 +2,42 @@
     <string name="app_name">Inventory Manager</string>
 
     <!--    main activity-->
-    <string name="btntext_main_query">Query</string>
-    <string name="btntext_main_move">Move Inventory</string>
-    <string name="btntext_main_issue">Issue Tags</string>
-    <string name="btntext_main_inventory">Take Inventory</string>
+    <string name="main_query">Query</string>
+    <string name="main_move">Move Inventory</string>
+    <string name="main_issue">Issue Tags</string>
+    <string name="main_inventory">Take Inventory</string>
 
     <!--    Scan activity-->
-    <string name="btntext_scan_stop">Stop</string>
-    <string name="btntext_scan_scan">Scan/Capture</string>
+    <string name="scan_capture">Scan/Capture</string>
 
 
     <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="pref_app_header">App</string>
+    <string name="pref_network_header">Network</string>
+    <string name="pref_scan_header">Scan</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
+    <!-- App Preferences -->
+    <string name="pref_app_home_activity">Default Home Page</string>
+    <string name="pref_app_theme">App Theme</string>
+    <!-- for setting default activity -->
+    <string name="default_activity">Main</string>
+    <string-array name="activities">
+        <item name="act_main">Main</item>
+        <item name="act_scan">Scan</item>
+    </string-array>
+    <string-array name="themes">
+        <item>System Default</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
 
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <!-- Network Preferences -->
+    <string name="pref_net_host">Host</string>
+    <string name="pref_net_port">Port</string>
+    <string name="pref_net_default_port">3000</string>
+
+    <!-- Scan Preferences -->
+    <string name="pref_auto_scan">Automatic Scan</string>
+    <string name="pref_auto_scan_on">Barcode will be read if camera reads a barcode</string>
+    <string name="pref_auto_scan_off">Barcodes will only be read when initiated by the scan button</string>
 </resources>
