@@ -23,10 +23,10 @@ The app will contian at least 3 activities. The settings fragment will contain c
 - Taking physical inventory
 
 ### Main Activity
-![Main Activity](main_activity.png)
+![Main Activity](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/main_activity.png)
 
 ### Scan Activity
-![Scan Activity](scan_activity.png)
+![Scan Activity](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/scan_activity.png)
 
 ### Settings Fragment
-![Settings Fragment](settings_fragment.png)
+![Settings Fragment](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/settings_fragment.png)
