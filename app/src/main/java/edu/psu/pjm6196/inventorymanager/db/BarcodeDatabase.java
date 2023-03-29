@@ -1,0 +1,11 @@
+package edu.psu.pjm6196.inventorymanager.db;
+
+import androidx.room.Database;
+import androidx.room.RoomDatabase;
+
+@Database(entities = {Barcode.class}, version = 1, exportSchema = false)
+public abstract class BarcodeDatabase extends RoomDatabase {
+
+    // TODO: implement
+
+}
