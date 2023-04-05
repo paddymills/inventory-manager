@@ -12,7 +12,7 @@ import java.util.List;
 @Dao
 public interface BarcodeDAO {
 
-    @Query("SELECT * FROM barcodes ORDER BY material COLLATE NOCASE, id")
+    @Query("SELECT * FROM barcodes ORDER BY hash COLLATE NOCASE, id")
     LiveData<List<Barcode>> getAll();
 
     @Insert
