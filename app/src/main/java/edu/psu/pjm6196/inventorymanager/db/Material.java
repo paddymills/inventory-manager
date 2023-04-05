@@ -1,9 +1,5 @@
 package edu.psu.pjm6196.inventorymanager.db;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-
 public class Material {
     public Material(String matl, String loc, String grade, String heat, String po) {
         this.material_master = matl;

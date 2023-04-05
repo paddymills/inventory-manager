@@ -15,7 +15,6 @@ public class Barcode {
     }
 
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
     public int id;
 
     @ColumnInfo(name = "hash")
