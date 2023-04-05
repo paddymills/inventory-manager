@@ -12,11 +12,9 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 // this code is mostly adapted from https://github.com/jeremyblum/cs_jokes_with_room/blob/master/app/src/main/java/edu/psu/jjb24/csjokes/db/JokeDatabase.java
-// I made some changes:
-//   - hard coded createBarcodeTable because I did not implement DefaultContent
-//   - some android studio recommendations
-//      - made INSTANCE volatile
-//      - made createBarcodeDatabaseCallback final
+// I made some changes because of android studio recommendations
+//     - made INSTANCE volatile
+//     - made createBarcodeDatabaseCallback final
 
 @Database(entities = {Barcode.class}, version = 1, exportSchema = false)
 public abstract class BarcodeDatabase extends RoomDatabase {
@@ -55,10 +53,8 @@ public abstract class BarcodeDatabase extends RoomDatabase {
     };
 
     private static void createBarcodeTable() {
-        insert(new Barcode(0, "0x000", new Material("50/50W-0008", "I2", "50/50W", "D4680", "4500239675")));
-        insert(new Barcode(0, "0x001", new Material("50/50W-0008", "I2", "50/50W", "D4680", "4500239675")));
-        insert(new Barcode(0, "0x002", new Material("50/50W-0008", "I2", "50/50W", "D4680", "4500239675")));
-        insert(new Barcode(0, "0x003", new Material("50/50W-0008", "I2", "50/50W", "D4680", "4500239675")));
+        for (int i=0; i<TestData.ids.length; i++)
+            insert( new Barcode(0, TestData.ids[i], TestData.materials[i]) );
     }
 
     public static void getBarcode(int id, BarcodeListener listener) {

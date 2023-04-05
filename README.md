@@ -4,4 +4,4 @@
 Create 
 - [x] one or more Entity classes
 - [x] a DAO class
-- [ ] RoomDatabase class
+- [x] RoomDatabase class
