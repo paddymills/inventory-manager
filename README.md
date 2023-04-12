@@ -13,5 +13,5 @@ Specifically, you will need to create (and submit these items)
 - [x] an AndroidViewModel
 - [x] an activity layout containing a RecyclerView
 - [x] a layout for list items in the view
-- [ ] a RecyclerView.Adapter, with a RecyclerView.ViewHolder
-- [ ] the Activity code to display the list
+- [x] a RecyclerView.Adapter, with a RecyclerView.ViewHolder
+- [x] the Activity code to display the list

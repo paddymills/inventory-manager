@@ -15,6 +15,10 @@ public class BarcodeViewModel extends AndroidViewModel {
         barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getAll();
     }
 
+    public LiveData<List<Barcode>> getByMaterialSearch(String search) {
+        return BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getByMaterial(search);
+    }
+
     public LiveData<List<Barcode>> getAllBarcodes() {
         return barcodes;
     }
