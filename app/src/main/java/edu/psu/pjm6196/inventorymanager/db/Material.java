@@ -1,12 +1,12 @@
 package edu.psu.pjm6196.inventorymanager.db;
 
 public class Material {
-    public Material(String matl, String loc, String grade, String heat, String po) {
-        this.material_master = matl;
-        this.location = loc;
+    public Material(String material_master, String location, String grade, String heat_number, String po_number) {
+        this.material_master = material_master;
+        this.location = location;
         this.grade = grade;
-        this.heat_number = heat;
-        this.po_number = po;
+        this.heat_number = heat_number;
+        this.po_number = po_number;
     }
 
     public String material_master;
