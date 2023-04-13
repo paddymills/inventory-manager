@@ -2,6 +2,8 @@ package edu.psu.pjm6196.inventorymanager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -15,13 +17,25 @@ import android.widget.TextView;
 import java.util.List;
 
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
+import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
 
 public class BarcodesListActivity extends AppCompatActivity {
 
+    private BarcodeViewModel barcodeViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcodes_list);
+
+        setSupportActionBar(findViewById(R.id.toolbar));
+
+        RecyclerView recyclerView = findViewById(R.id.listBarcodes);
+        BarcodeListAdapter adapter = new BarcodeListAdapter(this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
+        barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
     }
 
 
@@ -49,22 +63,23 @@ public class BarcodesListActivity extends AppCompatActivity {
             inflater = LayoutInflater.from(ctx);
         }
 
+        @NonNull
         @Override
-        public BarcodeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public BarcodeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View viewItem = inflater.inflate(R.layout.barcode_list_item, parent, false);
             return new BarcodeViewHolder(viewItem);
         }
 
         @Override
-        public void onBindViewHolder(BarcodeViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull BarcodeViewHolder holder, int position) {
             if ( barcodes == null ) {
-                holder.titleView.setText("...fetching...");
+                holder.titleView.setText(R.string.fetch_data_title);
             }
 
             else {
                 Barcode current = barcodes.get(position);
                 holder.barcode = current;
-                holder.titleView.setText(current.id_hash + "(" + current.material.material_master + ")");
+                holder.titleView.setText(current.title());
             }
         }
 
@@ -74,6 +89,11 @@ public class BarcodesListActivity extends AppCompatActivity {
                 return 0;
 
             return barcodes.size();
+        }
+
+        void setBarcodes(List<Barcode> barcodes) {
+            this.barcodes = barcodes;
+            notifyDataSetChanged();
         }
 
     }

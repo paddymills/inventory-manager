@@ -22,4 +22,8 @@ public class Barcode {
 
     @Embedded
     public Material material;
+
+    public String title() {
+        return this.id_hash + "(" + this.material.material_master + ")";
+    }
 }
