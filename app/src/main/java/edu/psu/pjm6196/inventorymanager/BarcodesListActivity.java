@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +31,7 @@ public class BarcodesListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcodes_list);
 
+        // setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar));
 
         RecyclerView recyclerView = findViewById(R.id.listBarcodes);
@@ -46,12 +47,21 @@ public class BarcodesListActivity extends AppCompatActivity {
         BarcodeDatabase.getBarcode(id, barcode -> {
             Bundle args = new Bundle();
             args.putInt("barcode_id", barcode.id);
-            // TODO: add args
+            args.putString("material", barcode.material.material_master);
+            args.putString("grade", barcode.material.grade);
+            args.putString("loc", barcode.material.location);
+            args.putString("heat", barcode.material.heat_number);
+            args.putString("po", barcode.material.po_number);
 
             BarcodeDisplayFragment barcodeDisplay = new BarcodeDisplayFragment();
             barcodeDisplay.setArguments(args);
             barcodeDisplay.show(getSupportFragmentManager(), "barcodeDisplay");
         });
+    }
+
+    public void editMaterial(int barcode_id) {
+        // TODO: tell AddBarcodeActivity which barcode_id to use
+        startActivity(new Intent(this, AddBarcodeActivity.class));
     }
 
     public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.BarcodeViewHolder> {
@@ -64,7 +74,7 @@ public class BarcodesListActivity extends AppCompatActivity {
                 super(view);
                 titleView = view.findViewById(R.id.barcodeTitle);
 
-                // set listeners
+                // show material info fragment if clicked
                 view.setOnClickListener(v -> displayMaterial(barcode.id));
             }
         }
@@ -120,15 +130,24 @@ public class BarcodesListActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
             barcode_id = getArguments().getInt("barcode_id");
-            final String title = getArguments().getString("material");
+            final String material = getArguments().getString("material");
+            final String grade = getArguments().getString("grade");
+            final String loc = getArguments().getString("loc");
             final String heat = getArguments().getString("heat");
+            final String po = getArguments().getString("po");
 
             builder
-                .setTitle(title)
-                    .setMessage(heat)
-                    .setPositiveButton("Edit", (dialog, id) -> ((BarcodesListActivity) getActivity()).edit(barcode_id))
-                    .setNeutralButton("Delete", (dialog, id) -> {})
-                    .setNegativeButton("Cancel", (dialog, id) -> {});
+                .setTitle("Material Info")
+                .setMessage(
+                    "Material: " + material + "\n" +
+                    "Grade: " + grade + "\n" +
+                    "Location: " + loc + "\n" +
+                    "Heat #:" + heat + "\n" +
+                    "PO #:" + po
+                )
+                .setPositiveButton("Edit", (dialog, id) -> ((BarcodesListActivity) getActivity()).editMaterial(barcode_id))
+//                    .setNegativeButton("Delete", (dialog, id) -> {});
+                .setNeutralButton("Return", (dialog, id) -> {});
 
             return builder.create();
         }
