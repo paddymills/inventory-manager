@@ -16,6 +16,7 @@
 
     <!-- Preference Titles -->
     <string name="pref_app_header">App</string>
+    <string name="pref_list_display_header">List Display</string>
     <string name="pref_network_header">Network</string>
     <string name="pref_scan_header">Scan</string>
 
@@ -24,15 +25,13 @@
     <string name="pref_app_theme">App Theme</string>
     <!-- for setting default activity -->
     <string name="default_activity">Main</string>
-    <string-array name="activities">
-        <item name="act_main">Main</item>
-        <item name="act_scan">Scan</item>
-    </string-array>
-    <string-array name="themes">
-        <item>System Default</item>
-        <item>Light</item>
-        <item>Dark</item>
-    </string-array>
+
+    <!--    List display Preferences-->
+    <string name="pref_list_display_summary">Data points to display in list display</string>
+    <string name="pref_list_display_location">Location</string>
+    <string name="pref_list_display_matl">Material Grade</string>
+    <string name="pref_list_display_heat">Heat Number</string>
+    <string name="pref_list_display_po">PO Number</string>
 
     <!-- Network Preferences -->
     <string name="pref_net_host">Host</string>
@@ -44,4 +43,9 @@
     <string name="pref_auto_scan_on">Barcode will be read if camera reads a barcode</string>
     <string name="pref_auto_scan_off">Barcodes will only be read when initiated by the scan button</string>
     <string name="fetch_data_title">…fetching…</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
 </resources>

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_settings) {
-            startActivity(new Intent(this, SettingsFragment.class));
+            startActivity(new Intent(this, SettingsActivity.class));
 
             return true;
         }
