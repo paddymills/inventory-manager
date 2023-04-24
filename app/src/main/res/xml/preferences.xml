@@ -1,0 +1,70 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/pref_app_header">
+
+        <ListPreference
+            app:defaultValue="@string/default_activity"
+            app:entries="@array/activities"
+            app:entryValues="@array/activities_keys"
+            app:useSimpleSummaryProvider="true"
+            app:key="default_activity"
+            app:title="@string/pref_app_home_activity" />
+
+        <ListPreference
+            app:entries="@array/themes"
+            app:entryValues="@array/themes_keys"
+            app:useSimpleSummaryProvider="true"
+            app:key="theme"
+            app:title="@string/pref_app_theme" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="@string/pref_list_display_header"
+        app:summary="pref_list_display_summary">
+
+        <SwitchPreferenceCompat
+            app:key="display_location"
+            app:defaultValue="true"
+            app:title="@string/pref_list_display_location" />
+        <SwitchPreferenceCompat
+            app:key="display_matl"
+            app:defaultValue="true"
+            app:title="@string/pref_list_display_matl" />
+        <SwitchPreferenceCompat
+            app:key="display_heat"
+            app:defaultValue="true"
+            app:title="@string/pref_list_display_heat" />
+        <SwitchPreferenceCompat
+            app:key="display_po"
+            app:defaultValue="true"
+            app:title="@string/pref_list_display_po" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/pref_network_header">
+
+        <EditTextPreference
+            app:key="host"
+            app:title="@string/pref_net_host"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:defaultValue="@string/pref_net_default_port"
+            app:key="port"
+            app:title="@string/pref_net_port"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/pref_scan_header">
+
+        <SwitchPreferenceCompat
+            app:key="auto_scan"
+            app:summaryOff="@string/pref_auto_scan_off"
+            app:summaryOn="@string/pref_auto_scan_on"
+            app:title="@string/pref_auto_scan" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

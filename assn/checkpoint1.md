@@ -26,7 +26,7 @@ The app will contian at least 3 activities. The settings fragment will contain c
 ![Main Activity](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/main_activity.png)
 
 ### Scan Activity
-![Scan Activity](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/scan_activity.png)
+![Scan Activity|500](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/scan_activity.png)
 
 ### Settings Fragment
-![Settings Fragment](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/settings_fragment.png)
+![Settings Fragment|500](https://raw.githubusercontent.com/paddymills/inventory-manager/master/assn/settings_fragment.png)
