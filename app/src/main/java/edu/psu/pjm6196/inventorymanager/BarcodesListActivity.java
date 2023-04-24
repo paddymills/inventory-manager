@@ -2,8 +2,10 @@ package edu.psu.pjm6196.inventorymanager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,8 +13,11 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -23,16 +28,13 @@ import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
 
-public class BarcodesListActivity extends AppCompatActivity {
+public class BarcodesListActivity extends CustomAppCompatActivity {
 
     private BarcodeViewModel barcodeViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcodes_list);
-
-        // setup toolbar
-        setSupportActionBar(findViewById(R.id.toolbar));
 
         RecyclerView recyclerView = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
@@ -68,14 +70,46 @@ public class BarcodesListActivity extends AppCompatActivity {
 
         class BarcodeViewHolder extends RecyclerView.ViewHolder {
             private final TextView titleView;
+            private final ConstraintLayout extrasView;
+            private final TextView extras_location;
+            private final TextView extras_grade;
+            private final TextView extras_heat;
+            private final TextView extras_po;
             private Barcode barcode;
+            private boolean expanded;
 
             private BarcodeViewHolder(View view) {
                 super(view);
                 titleView = view.findViewById(R.id.barcodeTitle);
+                extrasView = view.findViewById(R.id.barcode_extras);
+                extras_location = view.findViewById(R.id.barcode_location);
+                extras_grade = view.findViewById(R.id.barcode_grade);
+                extras_heat = view.findViewById(R.id.barcode_heat);
+                extras_po = view.findViewById(R.id.barcode_po);
+
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(BarcodesListActivity.this);
+//                SharedPreferences.Editor editor = prefs.edit();
+                if ( !prefs.getBoolean("display_location", true) )
+                      extras_location.setVisibility(View.GONE);
+                if ( !prefs.getBoolean("display_grade", true) )
+                    extras_grade.setVisibility(View.GONE);
+                if ( !prefs.getBoolean("display_heat", true) )
+                    extras_heat.setVisibility(View.GONE);
+                if ( !prefs.getBoolean("display_po", true) )
+                    extras_po.setVisibility(View.GONE);
 
                 // show material info fragment if clicked
-                view.setOnClickListener(v -> displayMaterial(barcode.id));
+                view.setOnClickListener(v -> {
+                    this.expanded = !this.expanded;
+//                    displayMaterial(barcode.id);
+
+                    extrasView.setVisibility(this.expanded ? View.VISIBLE : View.GONE);
+                });
+                view.setOnLongClickListener(v -> {
+                    displayMaterial(barcode.id);
+
+                    return true;
+                });
             }
         }
 
@@ -103,6 +137,11 @@ public class BarcodesListActivity extends AppCompatActivity {
                 Barcode current = barcodes.get(position);
                 holder.barcode = current;
                 holder.titleView.setText(current.title());
+                holder.extrasView.setVisibility(holder.expanded ? View.VISIBLE : View.GONE);
+                holder.extras_location.setText(String.format("%s: %s", getString(R.string.query_location_label), current.material.location));
+                holder.extras_grade.setText(String.format("%s: %s", getString(R.string.query_grade_label), current.material.grade));
+                holder.extras_heat.setText(String.format("%s: %s", getString(R.string.query_heat_label), current.material.heat_number));
+                holder.extras_po.setText(String.format("%s: %s", getString(R.string.query_po_label), current.material.po_number));
             }
         }
 
