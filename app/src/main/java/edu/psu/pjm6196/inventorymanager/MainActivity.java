@@ -20,5 +20,8 @@ public class MainActivity extends CustomAppCompatActivity {
             .setOnClickListener(
                 v -> startActivity(new Intent(this, BarcodesListActivity.class))
             );
+
+        findViewById(R.id.btn_move)
+            .setOnClickListener(v -> startActivity(new Intent(this, ScanActivity.class)));
     }
 }
