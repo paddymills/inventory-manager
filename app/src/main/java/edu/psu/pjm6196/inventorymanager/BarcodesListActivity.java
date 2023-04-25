@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
 public class BarcodesListActivity extends CustomAppCompatActivity {
 
     private BarcodeViewModel barcodeViewModel;
+    private boolean filtered = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +45,36 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.query_menu, menu);
+
+        if (filtered)
+            menu.getItem(0).setIcon(R.drawable.ic_nofilter);
+        else
+            menu.getItem(0).setIcon(R.drawable.ic_filter);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_filter) {
+            filtered = !filtered;
+            if (filtered)
+                item.setIcon(R.drawable.ic_nofilter);
+            else
+                item.setIcon(R.drawable.ic_filter);
+
+            filterMaterial();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void displayMaterial(int id) {
@@ -61,9 +93,21 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         });
     }
 
+    public void filterMaterial() {
+        RecyclerView recycler = findViewById(R.id.listBarcodes);
+        BarcodeListAdapter adapter = new BarcodeListAdapter(this);
+        recycler.setAdapter(adapter);
+        barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
+        barcodeViewModel.filterBarcodes(filtered);
+
+        barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
+    }
+
     public void editMaterial(int barcode_id) {
-        // TODO: tell AddBarcodeActivity which barcode_id to use
-        startActivity(new Intent(this, AddBarcodeActivity.class));
+        Intent add_barcode = new Intent(this, AddBarcodeActivity.class);
+        add_barcode.putExtra("barcode_id", barcode_id);
+
+        startActivity(add_barcode);
     }
 
     public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.BarcodeViewHolder> {

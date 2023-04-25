@@ -5,6 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity" >
     <item
+        android:id="@+id/menu_filter"
+        android:icon="@drawable/ic_filter"
+        android:title="@string/menu_filter"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_settings"
         android:title="@string/menu_settings"

@@ -17,7 +17,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme" />
+        android:theme="?attr/actionBarTheme"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listBarcodes"

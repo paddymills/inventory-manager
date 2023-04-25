@@ -7,6 +7,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public abstract class CustomAppCompatActivity extends AppCompatActivity {
 
@@ -20,7 +21,13 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
         super.onStart();
 
         // setup toolbar
-        setSupportActionBar(findViewById(R.id.toolbar));
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(view -> this.onBackButtonClicked());
+    }
+
+    protected void onBackButtonClicked() {
+        startActivity(new Intent(this, MainActivity.class));
     }
 
     @Override
@@ -35,9 +42,9 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
-
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }
