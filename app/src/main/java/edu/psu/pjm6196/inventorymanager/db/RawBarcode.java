@@ -6,9 +6,9 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "barcodes")
-public class Barcode {
+public class RawBarcode {
 
-    public Barcode(int id, String id_hash, Material material) {
+    public RawBarcode(int id, String id_hash, Material material) {
         this.id = id;
         this.id_hash = id_hash;
         this.material = material;

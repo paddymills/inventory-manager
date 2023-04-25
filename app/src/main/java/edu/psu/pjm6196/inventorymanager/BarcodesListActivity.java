@@ -1,7 +1,6 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -25,7 +24,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import edu.psu.pjm6196.inventorymanager.db.Barcode;
+import edu.psu.pjm6196.inventorymanager.db.RawBarcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
 
@@ -119,7 +118,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             private final TextView extras_grade;
             private final TextView extras_heat;
             private final TextView extras_po;
-            private Barcode barcode;
+            private RawBarcode barcode;
             private boolean expanded;
 
             private BarcodeViewHolder(View view) {
@@ -158,7 +157,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         }
 
         private final LayoutInflater inflater;
-        private List<Barcode> barcodes;
+        private List<RawBarcode> barcodes;
 
         public BarcodeListAdapter(Context ctx) {
             inflater = LayoutInflater.from(ctx);
@@ -178,7 +177,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             }
 
             else {
-                Barcode current = barcodes.get(position);
+                RawBarcode current = barcodes.get(position);
                 holder.barcode = current;
                 holder.titleView.setText(current.title());
                 holder.extrasView.setVisibility(holder.expanded ? View.VISIBLE : View.GONE);
@@ -197,7 +196,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             return barcodes.size();
         }
 
-        void setBarcodes(List<Barcode> barcodes) {
+        void setBarcodes(List<RawBarcode> barcodes) {
             this.barcodes = barcodes;
             notifyDataSetChanged();
         }

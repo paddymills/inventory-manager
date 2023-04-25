@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 
 public class BarcodeViewModel extends AndroidViewModel {
-    private LiveData<List<Barcode>> barcodes;
+    private LiveData<List<RawBarcode>> barcodes;
 
     public BarcodeViewModel(Application app) {
         super(app);
@@ -22,11 +22,11 @@ public class BarcodeViewModel extends AndroidViewModel {
             barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getAll();
     }
 
-    public LiveData<List<Barcode>> getByMaterialSearch(String search) {
+    public LiveData<List<RawBarcode>> getByMaterialSearch(String search) {
         return BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getByMaterial(search);
     }
 
-    public LiveData<List<Barcode>> getAllBarcodes() {
+    public LiveData<List<RawBarcode>> getAllBarcodes() {
         return barcodes;
     }
 }

@@ -16,10 +16,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 //     - made INSTANCE volatile
 //     - made createBarcodeDatabaseCallback final
 
-@Database(entities = {Barcode.class}, version = 1, exportSchema = false)
+@Database(entities = {RawBarcode.class}, version = 1, exportSchema = false)
 public abstract class BarcodeDatabase extends RoomDatabase {
     public interface BarcodeListener {
-        void onBarcodeReturned(Barcode barcode);
+        void onBarcodeReturned(RawBarcode barcode);
     }
 
     public abstract BarcodeDAO barcodeDAO();
@@ -54,7 +54,7 @@ public abstract class BarcodeDatabase extends RoomDatabase {
 
     private static void createBarcodeTable() {
         for (int i=0; i<TestData.ids.length; i++)
-            insert( new Barcode(0, TestData.ids[i], TestData.materials[i]) );
+            insert( new RawBarcode(0, TestData.ids[i], TestData.materials[i]) );
     }
 
     public static void getBarcode(int id, BarcodeListener listener) {
@@ -62,7 +62,7 @@ public abstract class BarcodeDatabase extends RoomDatabase {
             @Override
             public void handleMessage(Message message) {
                 super.handleMessage(message);
-                listener.onBarcodeReturned((Barcode) message.obj);
+                listener.onBarcodeReturned((RawBarcode) message.obj);
             }
         };
 
@@ -74,15 +74,15 @@ public abstract class BarcodeDatabase extends RoomDatabase {
         })).start();
     }
 
-    public static void insert(Barcode barcode) {
+    public static void insert(RawBarcode barcode) {
         (new Thread(() -> INSTANCE.barcodeDAO().insert(barcode))).start();
     }
 
-    public static void update(Barcode barcode) {
+    public static void update(RawBarcode barcode) {
         (new Thread(() -> INSTANCE.barcodeDAO().update(barcode))).start();
     }
 
-    public static void delete(Barcode barcode) {
+    public static void delete(RawBarcode barcode) {
         (new Thread(() -> INSTANCE.barcodeDAO().delete(barcode))).start();
     }
 }

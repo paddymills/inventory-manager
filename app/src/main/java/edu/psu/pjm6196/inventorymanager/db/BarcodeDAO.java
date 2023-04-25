@@ -13,20 +13,20 @@ import java.util.List;
 public interface BarcodeDAO {
 
     @Query("SELECT * FROM barcodes ORDER BY hash COLLATE NOCASE, id")
-    LiveData<List<Barcode>> getAll();
+    LiveData<List<RawBarcode>> getAll();
 
     @Insert
-    void insert(Barcode... barcodes);
+    void insert(RawBarcode... barcodes);
 
     @Update
-    void update(Barcode... barcodes);
+    void update(RawBarcode... barcodes);
 
     @Delete
-    void delete(Barcode... barcodes);
+    void delete(RawBarcode... barcodes);
 
     @Query("SELECT * FROM barcodes WHERE id = :barcode_id")
-    Barcode getById(int barcode_id);
+    RawBarcode getById(int barcode_id);
 
     @Query("SELECT * FROM barcodes WHERE material_master LIKE :search_term || '%'")
-    LiveData<List<Barcode>> getByMaterial(String search_term);
+    LiveData<List<RawBarcode>> getByMaterial(String search_term);
 }
