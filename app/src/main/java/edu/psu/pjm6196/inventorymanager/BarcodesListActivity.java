@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -63,15 +64,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_filter) {
-            filtered = !filtered;
-            if (filtered)
-                item.setIcon(R.drawable.ic_nofilter);
-            else
-                item.setIcon(R.drawable.ic_filter);
-
-            filterMaterial();
-
-            return true;
+            return filterMaterial();
         }
 
         return super.onOptionsItemSelected(item);
@@ -93,7 +86,18 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         });
     }
 
-    public void filterMaterial() {
+    public boolean filterMaterial() {
+        // toggle filtering
+        filtered = !filtered;
+
+        // set icon
+        MenuItem menu_item = findViewById(R.id.menu_filter);
+        if (filtered)
+            menu_item.setIcon(R.drawable.ic_nofilter);
+        else
+            menu_item.setIcon(R.drawable.ic_filter);
+
+        // set recycler view to have filtered/non-filtered list
         RecyclerView recycler = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
         recycler.setAdapter(adapter);
@@ -101,6 +105,12 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         barcodeViewModel.filterBarcodes(filtered);
 
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
+
+        // display toast of what happened
+        String message = filtered ? "Barcodes filtered" : "Filter removed";
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+        return true;
     }
 
     public void editMaterial(int barcode_id) {
