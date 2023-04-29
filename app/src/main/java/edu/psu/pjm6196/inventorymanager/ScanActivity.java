@@ -1,11 +1,8 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.resolutionselector.ResolutionSelector;
 import androidx.camera.core.resolutionselector.ResolutionStrategy;
@@ -16,26 +13,20 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
 import android.content.pm.PackageManager;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.media.Image;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.mlkit.vision.barcode.BarcodeScanner;
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
-import com.google.mlkit.vision.barcode.BarcodeScanning;
-import com.google.mlkit.vision.barcode.common.Barcode;
-import com.google.mlkit.vision.common.InputImage;
 import android.Manifest;
+import android.view.SurfaceView;
+import android.widget.Button;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 public class ScanActivity extends CustomAppCompatActivity {
 
@@ -44,6 +35,9 @@ public class ScanActivity extends CustomAppCompatActivity {
 
     private static final String[] CAMERA_PERMISSION = new String[] {Manifest.permission.CAMERA};
     private static final int CAMERA_REQUEST_CODE = 10;
+
+    private boolean scanning_is_bound;
+
 
     private PreviewView previewView;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
@@ -57,50 +51,33 @@ public class ScanActivity extends CustomAppCompatActivity {
         if ( !hasCameraPermission() )
             requestCameraPermission();
 
-        findViewById(R.id.btn_scan).setOnClickListener(v -> scanBarcode());
+        findViewById(R.id.btn_scan).setOnClickListener(v -> toggle_scanner_binding());
 
         previewView = findViewById(R.id.scan_preview);
+//        previewView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
+        previewView.setImplementationMode(PreviewView.ImplementationMode.PERFORMANCE);
+
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        cameraProviderFuture.addListener(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                    bindImageAnalysis(cameraProvider);
-                } catch (ExecutionException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, ContextCompat.getMainExecutor(this));
-    }
 
-    private boolean hasCameraPermission() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
+        Executor executor = ContextCompat.getMainExecutor(this);
+        cameraProviderFuture.addListener(this::toggle_scanner_binding, executor);
     }
 
     private void bindImageAnalysis(@NonNull ProcessCameraProvider cameraProvider) {
         ImageAnalysis imageAnalysis =
             new ImageAnalysis.Builder()
+//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_BLOCK_PRODUCER)
+//                .setImageQueueDepth(3)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setResolutionSelector(
                     new ResolutionSelector.Builder()
                         .setResolutionStrategy(
-                            new ResolutionStrategy(new Size(1280, 720), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER)
+                            new ResolutionStrategy(new Size(previewView.getWidth(), previewView.getHeight()), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER)
                         )
                         .build()
                 )
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
-        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), new ImageAnalysis.Analyzer() {
-            @Override
-            public void analyze(@NonNull ImageProxy image) {
-                new BarcodeAnalyzer().analyze(image);
-                image.close();
-            }
-        });
+        imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), new BarcodeAnalyzer(this));
 
         Preview preview = new Preview.Builder().build();
         CameraSelector cameraSelector = new CameraSelector.Builder()
@@ -110,60 +87,35 @@ public class ScanActivity extends CustomAppCompatActivity {
         cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, imageAnalysis, preview);
     }
 
-    public void scanBarcode() {
-        Log.d(TAG, "Scanning barcode...");
+    private void toggle_scanner_binding() {
+        try {
+            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+            if ( scanning_is_bound ) {
+                Log.d(TAG, "Scanning barcode...");
 
+                SurfaceView surfaceView = findViewById(R.id.surfaceView);
+                Canvas canvas = surfaceView.getHolder().lockCanvas();
+                canvas.drawBitmap(previewView.getBitmap(), canvas.getMatrix(), new Paint());
+                surfaceView.getHolder().unlockCanvasAndPost(canvas);
 
-    }
-
-    class BarcodeAnalyzer implements ImageAnalysis.Analyzer {
-
-        @Override
-        @OptIn(markerClass = ExperimentalGetImage.class)
-        public void analyze(@NonNull ImageProxy imageProxy) {
-            Image mediaImage = imageProxy.getImage();
-            if (mediaImage != null) {
-                InputImage image =
-                        InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
-
-                BarcodeScannerOptions options =
-                    new BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(
-                            Barcode.FORMAT_PDF417)
-                        .build();
-                BarcodeScanner scanner = BarcodeScanning.getClient(options);
-
-                scanner.process(image)
-                    .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
-                        @Override
-                        public void onSuccess(List<Barcode> barcodes) {
-                            for (Barcode barcode: barcodes) {
-                                Rect bounds = barcode.getBoundingBox();
-                                Point[] corners = barcode.getCornerPoints();
-
-                                String rawValue = barcode.getRawValue();
-
-                                int valueType = barcode.getValueType();
-                                // See API reference for complete list of supported types
-                                if (valueType == Barcode.TYPE_TEXT) {
-                                    Log.d(TAG, "Scanned barcode: " + rawValue);
-                                    Toast.makeText(ScanActivity.this, rawValue, Toast.LENGTH_LONG).show();
-                                } else {
-                                    Log.e(TAG, "Got other barcode type: " + valueType);
-                                }
-                            }
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            // no barcode: maybe do something at some timeout?
-                        }
-                    });
-                // Pass image to an ML Kit Vision API
-                // ...
+                cameraProvider.unbindAll();
+                ((Button) findViewById(R.id.btn_scan)).setText(R.string.scan_capture_unbound);
+            } else {
+                bindImageAnalysis(cameraProvider);
+                ((Button) findViewById(R.id.btn_scan)).setText(R.string.scan_capture_bound);
             }
 
+            scanning_is_bound = !scanning_is_bound;
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
         }
+    }
+
+    private boolean hasCameraPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
     }
 }

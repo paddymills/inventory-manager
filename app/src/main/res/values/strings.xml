@@ -15,7 +15,8 @@
     <string name="query_po_label">PO Number</string>
 
     <!--    Scan activity-->
-    <string name="scan_capture">Scan/Capture</string>
+    <string name="scan_capture_bound">Pause Scanning</string>
+    <string name="scan_capture_unbound">Resume Scanning</string>
 
     <!-- Add/Edit activity -->
     <string name="id_label">Barcode ID</string>
