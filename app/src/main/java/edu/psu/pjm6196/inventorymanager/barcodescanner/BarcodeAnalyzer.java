@@ -1,4 +1,4 @@
-package edu.psu.pjm6196.inventorymanager;
+package edu.psu.pjm6196.inventorymanager.barcodescanner;
 
 import android.app.Activity;
 import android.graphics.Canvas;
@@ -29,7 +29,9 @@ import com.google.mlkit.vision.common.InputImage;
 
 import java.util.List;
 
-class BarcodeAnalyzer implements ImageAnalysis.Analyzer {
+import edu.psu.pjm6196.inventorymanager.R;
+
+public class BarcodeAnalyzer implements ImageAnalysis.Analyzer {
     public static final int res_height = 1280;
     public static final int res_width = 720;
     private final String TAG = "BarcodeAnalyzer";
@@ -125,7 +127,7 @@ class BarcodeAnalyzer implements ImageAnalysis.Analyzer {
 
                         // TODO: store barcodes locations in a HashMap for canvas rendering
                         //      - key is barcode data
-                        //      - value is corners (or maybe a custom class with width height and rotation) 
+                        //      - value is corners (or maybe a custom class with width height and rotation)
                         if ( barcodes.size() > 0) {
                             canvas = surface.lockCanvas();
 

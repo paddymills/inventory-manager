@@ -1,8 +1,9 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.core.resolutionselector.ResolutionSelector;
@@ -14,22 +15,22 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Size;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import android.Manifest;
-import android.view.SurfaceView;
-import android.widget.Button;
 
-import java.util.List;
+import android.Manifest;
+import android.widget.Button;
+import android.widget.Toast;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
-import edu.psu.pjm6196.inventorymanager.view.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.BarcodeAnalyzer;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.BarcodeScannerProcessor;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 
 public class ScanActivity extends CustomAppCompatActivity {
 
@@ -41,13 +42,14 @@ public class ScanActivity extends CustomAppCompatActivity {
 
     private boolean scanning_is_bound;
 
-
+    private static final CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
 
     private ProcessCameraProvider cameraProvider;
     private Preview preview;
     private ImageAnalysis imageAnalysis;
+    private BarcodeScannerProcessor barcodeProcessor;
     private boolean needUpdateGraphicOverlayImageSourceInfo;
 
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
@@ -65,9 +67,11 @@ public class ScanActivity extends CustomAppCompatActivity {
             requestCameraPermission();
 
         previewView = findViewById(R.id.scan_preview);
-        init_camera_old();
+//        init_camera_old();
+        bindMlKitCamera();
     }
 
+    @OptIn(markerClass = ExperimentalGetImage.class)
     private void bindMlKitCamera() {
         if (cameraProvider == null)
             return;
@@ -79,6 +83,51 @@ public class ScanActivity extends CustomAppCompatActivity {
                 .build();
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
         cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview);
+
+        if ( imageAnalysis != null )
+            cameraProvider.unbind(imageAnalysis);
+
+        if ( barcodeProcessor != null )
+            barcodeProcessor.stop();
+
+        barcodeProcessor = new BarcodeScannerProcessor(this);
+
+        imageAnalysis =
+            new ImageAnalysis.Builder()
+//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+//                .setResolutionSelector(
+//                    new ResolutionSelector.Builder()
+//                        .setResolutionStrategy(
+//                            new ResolutionStrategy(new Size(previewView.getWidth(), previewView.getHeight()), ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER)
+//                        )
+//                        .build()
+//                )
+                .build();
+
+        needUpdateGraphicOverlayImageSourceInfo = true;
+        imageAnalysis.setAnalyzer(
+            // imageProcessor.processImageProxy will use another thread to run the detection underneath,
+            // thus we can just runs the analyzer itself on main thread.
+            ContextCompat.getMainExecutor(this),
+            imageProxy -> {
+                if (needUpdateGraphicOverlayImageSourceInfo) {
+//                    boolean isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT;
+                    boolean isImageFlipped = false;
+                    int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
+                    if (rotationDegrees == 0 || rotationDegrees == 180) {
+                        graphicOverlay.setImageSourceInfo(
+                            imageProxy.getWidth(), imageProxy.getHeight(), isImageFlipped);
+                    } else {
+                        graphicOverlay.setImageSourceInfo(
+                            imageProxy.getHeight(), imageProxy.getWidth(), isImageFlipped);
+                    }
+                    needUpdateGraphicOverlayImageSourceInfo = false;
+                }
+
+                barcodeProcessor.processImageProxy(imageProxy, graphicOverlay);
+            });
+
+        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis);
     }
 
     private void init_camera_old() {
