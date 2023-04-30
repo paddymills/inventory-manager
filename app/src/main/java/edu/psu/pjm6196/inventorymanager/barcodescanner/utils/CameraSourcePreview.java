@@ -26,7 +26,7 @@ import android.view.ViewGroup;
 import com.google.android.gms.common.images.Size;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraSource;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.preference.PreferenceUtils;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.PreferenceUtils;
 import java.io.IOException;
 
 /** Preview the camera image in the screen. */

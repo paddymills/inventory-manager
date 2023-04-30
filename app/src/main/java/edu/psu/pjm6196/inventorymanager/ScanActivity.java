@@ -42,7 +42,8 @@ public class ScanActivity extends CustomAppCompatActivity {
 
     private boolean scanning_is_bound;
 
-    private static final CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+    public static final CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+    public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
 
@@ -69,14 +70,14 @@ public class ScanActivity extends CustomAppCompatActivity {
         previewView = findViewById(R.id.scan_preview);
 
         new ViewModelProvider(this, (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
-                .get(CameraXViewModel.class)
-                .getProcessCameraProvider()
-                .observe(
-                        this,
-                        provider -> {
-                            cameraProvider = provider;
-                            bindMlKitCamera();
-                        });
+            .get(CameraXViewModel.class)
+            .getProcessCameraProvider()
+            .observe(
+                this,
+                provider -> {
+                    cameraProvider = provider;
+                    bindMlKitCamera();
+                });
 
 //        init_camera_old();
     }

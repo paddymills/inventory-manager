@@ -17,7 +17,7 @@
 package edu.psu.pjm6196.inventorymanager.barcodescanner;
 
 import android.content.Context;
-import android.graphics.Point;
+import android.graphics.Point;vision
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -28,7 +28,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.vision.VisionProcessorBase;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.VisionProcessorBase;
 
 import java.util.List;
 
