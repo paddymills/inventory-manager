@@ -19,9 +19,15 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Camera">
+        <ListPreference
+            app:key="camera_resolution"
+            app:title="Barcode scanning camera resolution"/>
+    </PreferenceCategory>
+
     <PreferenceCategory
         app:title="@string/pref_list_display_header"
-        app:summary="pref_list_display_summary">
+        app:summary="@string/pref_list_display_summary">
 
         <SwitchPreferenceCompat
             app:key="display_location"
