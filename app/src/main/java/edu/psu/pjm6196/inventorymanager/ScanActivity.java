@@ -1,6 +1,7 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
@@ -28,10 +29,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
+import edu.psu.pjm6196.inventorymanager.view.GraphicOverlay;
+
 public class ScanActivity extends CustomAppCompatActivity {
 
     // some of this code was adapted from the blog post: https://medium.com/swlh/introduction-to-androids-camerax-with-java-ca384c522c5
-    private final String TAG = "ScanActivity";
+    private static final String TAG = "ScanActivity";
 
     private static final String[] CAMERA_PERMISSION = new String[] {Manifest.permission.CAMERA};
     private static final int CAMERA_REQUEST_CODE = 10;
@@ -40,6 +43,13 @@ public class ScanActivity extends CustomAppCompatActivity {
 
 
     private PreviewView previewView;
+    private GraphicOverlay graphicOverlay;
+
+    private ProcessCameraProvider cameraProvider;
+    private Preview preview;
+    private ImageAnalysis imageAnalysis;
+    private boolean needUpdateGraphicOverlayImageSourceInfo;
+
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 
     @Override
@@ -47,13 +57,33 @@ public class ScanActivity extends CustomAppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
 
+        previewView = findViewById(R.id.scan_preview);
+        graphicOverlay = findViewById(R.id.scan_overlay);
+
         // TODO: handle if user refuses camera permission
         if ( !hasCameraPermission() )
             requestCameraPermission();
 
+        previewView = findViewById(R.id.scan_preview);
+        init_camera_old();
+    }
+
+    private void bindMlKitCamera() {
+        if (cameraProvider == null)
+            return;
+
+        if (preview != null)
+            cameraProvider.unbind(preview);
+
+        preview = new Preview.Builder()
+                .build();
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+        cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview);
+    }
+
+    private void init_camera_old() {
         findViewById(R.id.btn_scan).setOnClickListener(v -> toggle_scanner_binding());
 
-        previewView = findViewById(R.id.scan_preview);
 //        previewView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
         previewView.setImplementationMode(PreviewView.ImplementationMode.PERFORMANCE);
 
@@ -61,10 +91,11 @@ public class ScanActivity extends CustomAppCompatActivity {
 
         Executor executor = ContextCompat.getMainExecutor(this);
         cameraProviderFuture.addListener(this::toggle_scanner_binding, executor);
+
     }
 
     private void bindImageAnalysis(@NonNull ProcessCameraProvider cameraProvider) {
-        ImageAnalysis imageAnalysis =
+        imageAnalysis =
             new ImageAnalysis.Builder()
 //                .setBackpressureStrategy(ImageAnalysis.STRATEGY_BLOCK_PRODUCER)
 //                .setImageQueueDepth(3)
@@ -79,7 +110,7 @@ public class ScanActivity extends CustomAppCompatActivity {
                 .build();
         imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(this), new BarcodeAnalyzer(this));
 
-        Preview preview = new Preview.Builder().build();
+        preview = new Preview.Builder().build();
         CameraSelector cameraSelector = new CameraSelector.Builder()
             .requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
 
@@ -93,10 +124,10 @@ public class ScanActivity extends CustomAppCompatActivity {
             if ( scanning_is_bound ) {
                 Log.d(TAG, "Scanning barcode...");
 
-                SurfaceView surfaceView = findViewById(R.id.surfaceView);
-                Canvas canvas = surfaceView.getHolder().lockCanvas();
-                canvas.drawBitmap(previewView.getBitmap(), canvas.getMatrix(), new Paint());
-                surfaceView.getHolder().unlockCanvasAndPost(canvas);
+//                SurfaceView surfaceView = findViewById(R.id.surfaceView);
+//                Canvas canvas = surfaceView.getHolder().lockCanvas();
+//                canvas.drawBitmap(previewView.getBitmap(), canvas.getMatrix(), new Paint());
+//                surfaceView.getHolder().unlockCanvasAndPost(canvas);
 
                 cameraProvider.unbindAll();
                 ((Button) findViewById(R.id.btn_scan)).setText(R.string.scan_capture_unbound);
