@@ -12,7 +12,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -20,10 +20,10 @@ import android.util.Log;
 import android.util.Size;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.demo.CameraXViewModel;
 
 import android.Manifest;
 import android.widget.Button;
-import android.widget.Toast;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -67,8 +67,18 @@ public class ScanActivity extends CustomAppCompatActivity {
             requestCameraPermission();
 
         previewView = findViewById(R.id.scan_preview);
+
+        new ViewModelProvider(this, (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
+                .get(CameraXViewModel.class)
+                .getProcessCameraProvider()
+                .observe(
+                        this,
+                        provider -> {
+                            cameraProvider = provider;
+                            bindMlKitCamera();
+                        });
+
 //        init_camera_old();
-        bindMlKitCamera();
     }
 
     @OptIn(markerClass = ExperimentalGetImage.class)
@@ -164,7 +174,7 @@ public class ScanActivity extends CustomAppCompatActivity {
             .requireLensFacing(CameraSelector.LENS_FACING_BACK).build();
 
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
-        cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, imageAnalysis, preview);
+        cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview);
     }
 
     private void toggle_scanner_binding() {
@@ -172,11 +182,6 @@ public class ScanActivity extends CustomAppCompatActivity {
             ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
             if ( scanning_is_bound ) {
                 Log.d(TAG, "Scanning barcode...");
-
-//                SurfaceView surfaceView = findViewById(R.id.surfaceView);
-//                Canvas canvas = surfaceView.getHolder().lockCanvas();
-//                canvas.drawBitmap(previewView.getBitmap(), canvas.getMatrix(), new Paint());
-//                surfaceView.getHolder().unlockCanvasAndPost(canvas);
 
                 cameraProvider.unbindAll();
                 ((Button) findViewById(R.id.btn_scan)).setText(R.string.scan_capture_unbound);
