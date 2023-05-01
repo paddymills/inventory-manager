@@ -42,7 +42,7 @@ public class BarcodeGraphic extends Graphic {
   private final Paint labelPaint;
 
   BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
-    super(overlay);
+    super(overlay, barcode.getRawValue());
 
     this.barcode = barcode;
 
