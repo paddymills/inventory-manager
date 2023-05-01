@@ -14,9 +14,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class SettingsActivity extends AppCompatActivity {
 
     @Override
@@ -38,14 +35,14 @@ public class SettingsActivity extends AppCompatActivity {
     public static class SettingsFragment extends PreferenceFragmentCompat {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.preferences, rootKey);
+
             ListPreference pref = findPreference("camera_resolution");
             if ( pref != null ) {
                 String[] entries = get_camera_resolution_entries(pref);
                 pref.setEntries(entries);
                 pref.setEntryValues(entries);
             }
-
-            setPreferencesFromResource(R.xml.preferences, rootKey);
         }
 
         private String[] get_camera_resolution_entries(ListPreference pref) {

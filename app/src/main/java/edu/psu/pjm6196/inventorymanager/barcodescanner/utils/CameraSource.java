@@ -28,13 +28,12 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
+
 import com.google.android.gms.common.images.Size;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.FrameMetadata;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.VisionImageProcessor;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.PreferenceUtils;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -259,7 +258,9 @@ public class CameraSource {
     }
     Camera camera = Camera.open(requestedCameraId);
 
-    SizePair sizePair = PreferenceUtils.getCameraPreviewSizePair(activity, requestedCameraId);
+    // TODO: impl this
+//    SizePair sizePair = PreferenceUtils.getCameraPreviewSizePair(activity, requestedCameraId);
+    SizePair sizePair = null;
     if (sizePair == null) {
       sizePair =
           selectSizePair(

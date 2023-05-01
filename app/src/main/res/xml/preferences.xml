@@ -23,6 +23,10 @@
         <ListPreference
             app:key="camera_resolution"
             app:title="Barcode scanning camera resolution"/>
+        <SwitchPreference
+            app:key="live_preview"
+            app:title="Live Preview"
+            app:summary="@string/enable_preview_summary" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -48,28 +52,25 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/pref_network_header">
+<!--    <PreferenceCategory app:title="@string/pref_network_header">-->
 
-        <EditTextPreference
-            app:key="host"
-            app:title="@string/pref_net_host"
-            app:useSimpleSummaryProvider="true" />
+<!--        <EditTextPreference-->
+<!--            app:key="host"-->
+<!--            app:title="@string/pref_net_host"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
 
-        <EditTextPreference
-            app:defaultValue="@string/pref_net_default_port"
-            app:key="port"
-            app:title="@string/pref_net_port"
-            app:useSimpleSummaryProvider="true" />
+<!--        <EditTextPreference-->
+<!--            app:defaultValue="@string/pref_net_default_port"-->
+<!--            app:key="port"-->
+<!--            app:title="@string/pref_net_port"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
 
-    </PreferenceCategory>
+<!--    </PreferenceCategory>-->
 
-    <PreferenceCategory app:title="@string/pref_scan_header">
-
-        <SwitchPreferenceCompat
-            app:key="auto_scan"
-            app:summaryOff="@string/pref_auto_scan_off"
-            app:summaryOn="@string/pref_auto_scan_on"
-            app:title="@string/pref_auto_scan" />
+    <PreferenceCategory app:title="@string/pref_misc_header">
+        <SwitchPreference
+            app:key="debug_mode"
+            app:title="Debug mode"/>
 
     </PreferenceCategory>
 

@@ -23,7 +23,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
@@ -31,7 +30,6 @@ import android.widget.Toast;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageProxy;
 
@@ -44,19 +42,20 @@ import com.google.android.odml.image.MediaMlImageBuilder;
 import com.google.android.odml.image.MlImage;
 import com.google.mlkit.common.MlKitException;
 import com.google.mlkit.vision.common.InputImage;
+
+import java.nio.ByteBuffer;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.BitmapUtils;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraImageGraphic;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.FrameMetadata;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.InferenceInfoGraphic;
+import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.ScopedExecutor;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.TemperatureMonitor;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.VisionImageProcessor;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.PreferenceUtils;
-
-import java.nio.ByteBuffer;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Abstract base class for vision frame processors. Subclasses need to implement {@link
@@ -174,7 +173,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
     // If live viewport is on (that is the underneath surface view takes care of the camera preview
     // drawing), skip the unnecessary bitmap creation that used for the manual preview drawing.
     Bitmap bitmap =
-        PreferenceUtils.isCameraLiveViewportEnabled(graphicOverlay.getContext())
+        PreferenceUtils.isLivePreviewEnabled(graphicOverlay.getContext())
             ? null
             : BitmapUtils.getBitmap(data, frameMetadata);
 
@@ -212,7 +211,6 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
   // -----------------Code for processing live preview frame from CameraX API-----------------------
   @Override
-  @RequiresApi(VERSION_CODES.LOLLIPOP)
   @ExperimentalGetImage
   public void processImageProxy(ImageProxy image, GraphicOverlay graphicOverlay) {
     long frameStartMs = SystemClock.elapsedRealtime();
@@ -222,7 +220,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
     }
 
     Bitmap bitmap = null;
-    if (!PreferenceUtils.isCameraLiveViewportEnabled(graphicOverlay.getContext())) {
+    if (!PreferenceUtils.isLivePreviewEnabled(graphicOverlay.getContext())) {
       bitmap = BitmapUtils.getBitmap(image);
     }
 
@@ -333,11 +331,13 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
               }
 
               graphicOverlay.clear();
+
+    // some of this code was adapted from the blog post: https://medium.com/swlh/introduction-to-androids-camerax-with-java-ca384c522c5
               if (originalCameraImage != null) {
                 graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage));
               }
               VisionProcessorBase.this.onSuccess(results, graphicOverlay);
-              if (!PreferenceUtils.shouldHideDetectionInfo(graphicOverlay.getContext())) {
+              if (PreferenceUtils.showDetectionInfo(graphicOverlay.getContext())) {
                 graphicOverlay.add(
                     new InferenceInfoGraphic(
                         graphicOverlay,

@@ -23,11 +23,12 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
+
 import com.google.android.gms.common.images.Size;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraSource;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.PreferenceUtils;
+
 import java.io.IOException;
+
+import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 /** Preview the camera image in the screen. */
 public class CameraSourcePreview extends ViewGroup {
@@ -37,7 +38,7 @@ public class CameraSourcePreview extends ViewGroup {
   private final SurfaceView surfaceView;
   private boolean startRequested;
   private boolean surfaceAvailable;
-  private edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraSource cameraSource;
+  private CameraSource cameraSource;
 
   private GraphicOverlay overlay;
 
@@ -52,7 +53,7 @@ public class CameraSourcePreview extends ViewGroup {
     addView(surfaceView);
   }
 
-  private void start(edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraSource cameraSource) throws IOException {
+  private void start(CameraSource cameraSource) throws IOException {
     this.cameraSource = cameraSource;
 
     if (this.cameraSource != null) {
@@ -61,7 +62,7 @@ public class CameraSourcePreview extends ViewGroup {
     }
   }
 
-  public void start(edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraSource cameraSource, GraphicOverlay overlay) throws IOException {
+  public void start(CameraSource cameraSource, GraphicOverlay overlay) throws IOException {
     this.overlay = overlay;
     start(cameraSource);
   }
@@ -82,7 +83,7 @@ public class CameraSourcePreview extends ViewGroup {
 
   private void startIfReady() throws IOException, SecurityException {
     if (startRequested && surfaceAvailable) {
-      if (PreferenceUtils.isCameraLiveViewportEnabled(context)) {
+      if (PreferenceUtils.isLivePreviewEnabled(context)) {
         cameraSource.start(surfaceView.getHolder());
       } else {
         cameraSource.start();
