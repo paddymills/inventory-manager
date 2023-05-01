@@ -3,9 +3,9 @@
     <string name="todo">not implemented yet…</string>
 
     <!--    main activity-->
-    <string name="main_query">Query</string>
+    <string name="main_query">Inventory List</string>
     <string name="main_move">Move Inventory</string>
-    <string name="main_issue">Issue Tags</string>
+    <string name="main_issue">Add Inventory</string>
     <string name="main_inventory">Take Inventory</string>
 
     <!--    Query activity-->

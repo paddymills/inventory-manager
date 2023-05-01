@@ -18,7 +18,7 @@
         android:theme="?attr/actionBarTheme" />
 
     <Button
-        android:id="@+id/btn_query"
+        android:id="@+id/btn_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/main_query"
@@ -26,6 +26,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <Button
+        android:id="@+id/btn_move"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/main_move"
+        app:layout_constraintBottom_toTopOf="@+id/btn_issue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_list" />
+
+    <Button
+        android:id="@+id/btn_issue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/main_issue"
+        app:layout_constraintBottom_toTopOf="@+id/btn_inventory"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_move" />
 
     <Button
         android:id="@+id/btn_inventory"
@@ -37,24 +57,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_issue" />
 
-    <Button
-        android:id="@+id/btn_move"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_launch_scanner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/main_move"
-        app:layout_constraintBottom_toTopOf="@+id/btn_issue"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_query" />
-
-    <Button
-        android:id="@+id/btn_issue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/main_issue"
-        app:layout_constraintBottom_toTopOf="@+id/btn_inventory"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btn_move" />
+        app:srcCompat="@drawable/ic_qrcode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

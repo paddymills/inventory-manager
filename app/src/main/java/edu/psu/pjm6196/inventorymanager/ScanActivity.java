@@ -1,11 +1,15 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
@@ -16,6 +20,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.BarcodeScannerProcessor;
@@ -40,6 +45,30 @@ public class ScanActivity extends CustomAppCompatActivity {
     private BarcodeScannerProcessor barcodeProcessor;
     private boolean needUpdateGraphicOverlayImageSourceInfo;
     private boolean scanning_is_paused;
+    private CallingActivityIntent scan_use_case;
+
+    // for knowing what the calling activity wants to do with the scanned data barcode(s)
+    public enum CallingActivityIntent {
+        // single barcode
+        AddMaterial,
+        FindMaterial,
+        MoveMaterial,
+
+        // multiple barcodes
+        FilterList,
+        TakeInventory;
+
+        public boolean supportsMultipleBarcodeScanning() {
+            switch ( this ) {
+                case AddMaterial:
+                case FindMaterial:
+                case MoveMaterial:
+                    return true;
+            }
+
+            return false;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +77,25 @@ public class ScanActivity extends CustomAppCompatActivity {
 
         Log.i(TAG, "onCreate");
 
+        Intent callingIntent = getIntent();
+        scan_use_case  = (CallingActivityIntent) callingIntent.getSerializableExtra("calling_activity_intent");
+
         previewView = findViewById(R.id.scan_preview);
         graphicOverlay = findViewById(R.id.scan_overlay);
 
         // TODO: handle if user refuses camera permission
-        if ( !hasCameraPermission() )
+        while ( !hasCameraPermission() ) {
             requestCameraPermission();
+
+            if ( !hasCameraPermission() ) {
+                BarcodesListActivity.BarcodeDisplayFragment barcodeDisplay = new BarcodesListActivity.BarcodeDisplayFragment();
+                barcodeDisplay.setArguments(args);
+                barcodeDisplay.show(getSupportFragmentManager(), "barcodeDisplay");
+                noCameraAccessDialog();
+            }
+        }
+
+
 
         // if we need to dynamically select camera lens use CameraSelector.Builder
         cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraLens).build();
@@ -196,5 +238,29 @@ public class ScanActivity extends CustomAppCompatActivity {
 
     private void requestCameraPermission() {
         ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
+    }
+
+    private static class CameraAccessErrorFragment extends DialogFragment {
+        int barcode_id;
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder
+                .setTitle("Material Info")
+                .setMessage(
+                    "Access to use the camera was denied"
+                )
+                .setPositiveButton("Retry", (dialog, id) -> {
+                })
+                .setNegativeButton("Return", (dialog, id) -> {
+                    // TODO: do we need to return a camera failure to the calling activity?
+                    startActivity(new Intent(this, ScanActivity.this.getCallingActivity().getClass()));
+                });
+
+            return builder.create();
+        }
     }
 }
