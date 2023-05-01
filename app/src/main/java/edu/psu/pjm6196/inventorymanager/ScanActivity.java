@@ -83,19 +83,14 @@ public class ScanActivity extends CustomAppCompatActivity {
         previewView = findViewById(R.id.scan_preview);
         graphicOverlay = findViewById(R.id.scan_overlay);
 
-        // TODO: handle if user refuses camera permission
-        while ( !hasCameraPermission() ) {
+        // get camera permissions and display error dialog until the user agrees
+        while (cameraPermissionsNotGranted()) {
             requestCameraPermission();
 
-            if ( !hasCameraPermission() ) {
-                BarcodesListActivity.BarcodeDisplayFragment barcodeDisplay = new BarcodesListActivity.BarcodeDisplayFragment();
-                barcodeDisplay.setArguments(args);
-                barcodeDisplay.show(getSupportFragmentManager(), "barcodeDisplay");
-                noCameraAccessDialog();
-            }
+            if (cameraPermissionsNotGranted())
+                new ScanActivity.CameraAccessErrorFragment()
+                        .show(getSupportFragmentManager(), "CameraAccessError");
         }
-
-
 
         // if we need to dynamically select camera lens use CameraSelector.Builder
         cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraLens).build();
@@ -222,6 +217,7 @@ public class ScanActivity extends CustomAppCompatActivity {
                             graphicOverlay.setImageSourceInfo(width, height, isImageFlipped);
                             break;
                         default:
+                            //noinspection SuspiciousNameCombination
                             graphicOverlay.setImageSourceInfo(height, width, isImageFlipped);
                     }
 
@@ -232,8 +228,8 @@ public class ScanActivity extends CustomAppCompatActivity {
             });
     }
 
-    private boolean hasCameraPermission() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    private boolean cameraPermissionsNotGranted() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestCameraPermission() {
@@ -241,24 +237,17 @@ public class ScanActivity extends CustomAppCompatActivity {
     }
 
     private static class CameraAccessErrorFragment extends DialogFragment {
-        int barcode_id;
-
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
 
             builder
                 .setTitle("Material Info")
-                .setMessage(
-                    "Access to use the camera was denied"
-                )
-                .setPositiveButton("Retry", (dialog, id) -> {
-                })
-                .setNegativeButton("Return", (dialog, id) -> {
-                    // TODO: do we need to return a camera failure to the calling activity?
-                    startActivity(new Intent(this, ScanActivity.this.getCallingActivity().getClass()));
-                });
+                .setMessage("The scanner requires camera permissions to operate")
+                .setCancelable(false)
+                .setPositiveButton("Re-authorize", (dialog, id) -> {})
+                .setNegativeButton("Go Back", (dialog, id) -> ((ScanActivity) getActivity()).onBackButtonClicked());
 
             return builder.create();
         }
