@@ -27,7 +27,14 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
     }
 
     protected void onBackButtonClicked() {
-        startActivity(new Intent(this, MainActivity.class));
+        Intent intent = new Intent(this, getCallingActivity().getClass());
+        setReturnToActivityArgs(intent);
+        startActivity(intent);
+    }
+
+    protected void setReturnToActivityArgs(Intent intent) {
+        // for passing data back to calling intent
+//        intent.putExtra("value_name", 0);
     }
 
     @Override
