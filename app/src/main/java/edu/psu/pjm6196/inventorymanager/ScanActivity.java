@@ -1,13 +1,12 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
@@ -20,7 +19,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.BarcodeScannerProcessor;
@@ -38,7 +36,7 @@ public class ScanActivity extends CustomAppCompatActivity {
     private static final String TAG = "ScanActivity";
 
     private static final String[] CAMERA_PERMISSION = new String[] {Manifest.permission.CAMERA};
-    private static final int CAMERA_REQUEST_CODE = 10;
+    private static final int CAMERA_REQUEST_CODE = 475;
 
     public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
     private PreviewView previewView;
@@ -64,7 +62,7 @@ public class ScanActivity extends CustomAppCompatActivity {
         FilterList,
         TakeInventory;
 
-        public boolean supportsMultipleBarcodeScanning() {
+        public boolean isSingleBarcodeScanUseCase() {
             switch ( this ) {
                 case AddMaterial:
                 case FindMaterial:
@@ -86,32 +84,46 @@ public class ScanActivity extends CustomAppCompatActivity {
         Intent callingIntent = getIntent();
         scan_use_case  = (CallingActivityIntent) callingIntent.getSerializableExtra("calling_activity_intent");
 
+        // request camera permissions
+        ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (
+            requestCode == CAMERA_REQUEST_CODE &&
+            grantResults.length > 0 &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            postPermissionsGrantedSetup();
+        }
+
+        else {
+            Toast.makeText(this, "Barcode scanner requires camera permissions", Toast.LENGTH_LONG).show();
+            startActivity(new Intent(this, MainActivity.class));
+        }
+    }
+
+    private void postPermissionsGrantedSetup() {
         previewView = findViewById(R.id.scan_preview);
         graphicOverlay = findViewById(R.id.scan_overlay);
-
-        // get camera permissions and display error dialog until the user agrees
-        while (cameraPermissionsNotGranted()) {
-            requestCameraPermission();
-
-            if (cameraPermissionsNotGranted())
-                new ScanActivity.CameraAccessErrorFragment()
-                        .show(getSupportFragmentManager(), "CameraAccessError");
-        }
 
         // if we need to dynamically select camera lens use CameraSelector.Builder
         cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraLens).build();
 
         new ViewModelProvider(
-            this,
-            (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory
-                .getInstance(getApplication())
+                this,
+                (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory
+                        .getInstance(getApplication())
         )
-            .get(CameraXViewModel.class)
-            .getProcessCameraProvider()
-            .observe( this, provider -> {
-                cameraProvider = provider;
-                bindCamera();
-            });
+                .get(CameraXViewModel.class)
+                .getProcessCameraProvider()
+                .observe( this, provider -> {
+                    cameraProvider = provider;
+                    bindCamera();
+                });
 
         findViewById(R.id.btn_pause_scanning).setOnClickListener(v -> {
             if ( scanning_is_paused ) {
@@ -232,30 +244,5 @@ public class ScanActivity extends CustomAppCompatActivity {
 
                 barcodeProcessor.processImageProxy(imageProxy, graphicOverlay);
             });
-    }
-
-    private boolean cameraPermissionsNotGranted() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
-    }
-
-    private static class CameraAccessErrorFragment extends DialogFragment {
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
-            builder
-                .setTitle("Material Info")
-                .setMessage("The scanner requires camera permissions to operate")
-                .setCancelable(false)
-                .setPositiveButton("Re-authorize", (dialog, id) -> {})
-                .setNegativeButton("Go Back", (dialog, id) -> ((ScanActivity) getActivity()).onBackButtonClicked());
-
-            return builder.create();
-        }
     }
 }
