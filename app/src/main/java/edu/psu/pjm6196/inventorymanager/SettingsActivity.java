@@ -42,6 +42,13 @@ public class SettingsActivity extends CustomAppCompatActivity {
                 String[] entries = get_camera_resolution_entries();
                 pref.setEntries(entries);
                 pref.setEntryValues(entries);
+
+                pref.setSummary(pref.getEntry() == null ? "Default" : pref.getEntry());
+                pref.setOnPreferenceChangeListener((p, value) -> {
+                    pref.setSummary((String) value);
+
+                    return true;
+                });
             }
         }
 

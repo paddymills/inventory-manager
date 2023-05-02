@@ -11,13 +11,14 @@ import androidx.preference.PreferenceManager;
 public class PreferenceUtils {
     public static ResolutionSelector getTargetCameraResolution(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        Size targetResolution = android.util.Size.parseSize(prefs.getString("camera_resolution", null));
+        String targetResolution = prefs.getString("camera_resolution", null);
 
         if (targetResolution != null) {
             return new ResolutionSelector.Builder()
-                .setResolutionStrategy(
-                    new ResolutionStrategy(targetResolution, ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER)
-                )
+                .setResolutionStrategy(new ResolutionStrategy(
+                    Size.parseSize(targetResolution),
+                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER
+                ))
                 .build();
         }
 
