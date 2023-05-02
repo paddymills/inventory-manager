@@ -73,15 +73,13 @@ public class GraphicOverlay extends View {
   /**
    * Base class for a custom graphics object to be rendered within the graphic overlay. Subclass
    * this and implement the {@link Graphic#draw(Canvas)} method to define the graphics element. Add
-   * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
+   * instances to the overlay using {@link GraphicOverlay#add(String, Graphic)}.
    */
   public abstract static class Graphic {
     private final GraphicOverlay overlay;
-    private final String key;
 
-    public Graphic(GraphicOverlay overlay, String key) {
+    public Graphic(GraphicOverlay overlay) {
       this.overlay = overlay;
-      this.key = key;
     }
 
     /**
@@ -210,10 +208,6 @@ public class GraphicOverlay extends View {
         paint.setARGB(255, 255 - v, 255 - v, 255);
       }
     }
-
-    protected boolean needsRemoved() {
-      return false;
-    }
   }
 
   public GraphicOverlay(Context context, AttributeSet attrs) {
@@ -226,23 +220,22 @@ public class GraphicOverlay extends View {
   /** Removes all graphics from the overlay. */
   public void clear() {
     synchronized (lock) {
-      graphics.entrySet().removeIf( entry -> entry.getValue().needsRemoved() );
-//      graphics.clear();
+      graphics.clear();
     }
     postInvalidate();
   }
 
   /** Adds a graphic to the overlay. */
-  public void add(Graphic graphic) {
+  public void add(String key, Graphic graphic) {
     synchronized (lock) {
-      graphics.put(graphic.key, graphic);
+      graphics.put(key, graphic);
     }
   }
 
   /** Removes a graphic from the overlay. */
-  public void remove(Graphic graphic) {
+  public void remove(String key) {
     synchronized (lock) {
-      graphics.remove(graphic.key);
+      graphics.remove(key);
     }
     postInvalidate();
   }

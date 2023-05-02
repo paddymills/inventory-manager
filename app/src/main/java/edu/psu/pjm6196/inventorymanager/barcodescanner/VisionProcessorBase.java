@@ -334,11 +334,12 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
     // some of this code was adapted from the blog post: https://medium.com/swlh/introduction-to-androids-camerax-with-java-ca384c522c5
               if (originalCameraImage != null) {
-                graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage));
+                graphicOverlay.add("IMAGE_GRAPHIC", new CameraImageGraphic(graphicOverlay, originalCameraImage));
               }
               VisionProcessorBase.this.onSuccess(results, graphicOverlay);
               if (PreferenceUtils.showDetectionInfo(graphicOverlay.getContext())) {
                 graphicOverlay.add(
+                    "INFO_GRAPHIC",
                     new InferenceInfoGraphic(
                         graphicOverlay,
                         currentFrameLatencyMs,

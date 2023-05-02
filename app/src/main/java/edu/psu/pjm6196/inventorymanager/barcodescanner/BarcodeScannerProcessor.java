@@ -29,7 +29,9 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 
@@ -37,11 +39,34 @@ import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> {
 
   private static final String TAG = "BarcodeProcessor";
+  private static final long LIFETIME_DURATION = 250;
 
   private final BarcodeScanner barcodeScanner;
 
+  private HashMap<String, ScannedBarcode> barcodes;
+
+  private static class ScannedBarcode {
+    private Barcode barcode;
+    private long lastScannedTime;
+
+    public ScannedBarcode(Barcode barcode) {
+      this.barcode = barcode;
+      this.lastScannedTime = System.currentTimeMillis();
+    }
+
+    public boolean needsRemoved() {
+      return this.lastScannedTime - System.currentTimeMillis() > LIFETIME_DURATION;
+    }
+
+    public String getKey() {
+      return this.barcode.getRawValue();
+    }
+  }
+
   public BarcodeScannerProcessor(Context context) {
     super(context);
+    barcodes = new HashMap<>();
+
     barcodeScanner = BarcodeScanning.getClient(
         // detection is much faster if we specify the format, but this is optional
         new BarcodeScannerOptions.Builder()
@@ -63,13 +88,26 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
 
   @Override
   protected void onSuccess(@NonNull List<Barcode> barcodes, @NonNull GraphicOverlay graphicOverlay) {
-    if (barcodes.isEmpty())
+    if (barcodes.isEmpty()) {
       Log.v(MANUAL_TESTING_LOG, "No barcode has been detected");
+      validateBarcodesDisplayed(graphicOverlay);
+    }
 
     for (int i = 0; i < barcodes.size(); ++i) {
       Barcode barcode = barcodes.get(i);
-      graphicOverlay.add(new BarcodeGraphic(graphicOverlay, barcode));
+      this.barcodes.put(barcode.getRawValue(), new ScannedBarcode(barcode));
+
+      graphicOverlay.add(barcode.getRawValue(), new BarcodeGraphic(graphicOverlay, barcode));
       logExtrasForTesting(barcode);
+    }
+  }
+
+  private void validateBarcodesDisplayed(@NonNull GraphicOverlay graphicOverlay) {
+    for ( Map.Entry<String, ScannedBarcode> barcode : this.barcodes.entrySet() ) {
+      if ( barcode.getValue().needsRemoved() ) {
+        graphicOverlay.remove(barcode.getKey());
+        this.barcodes.remove(barcode.getKey());
+      }
     }
   }
 

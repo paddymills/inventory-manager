@@ -42,7 +42,7 @@ public class InferenceInfoGraphic extends edu.psu.pjm6196.inventorymanager.barco
       long frameLatency,
       long detectorLatency,
       @Nullable Integer framesPerSecond) {
-    super(overlay, "INFO_GRAPHIC");
+    super(overlay);
     this.overlay = overlay;
     this.frameLatency = frameLatency;
     this.detectorLatency = detectorLatency;
