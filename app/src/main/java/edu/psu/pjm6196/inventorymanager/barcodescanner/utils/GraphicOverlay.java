@@ -25,10 +25,11 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
+
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.HashMap;
 
 /**
  * A view which renders a series of custom graphics to be overlayed on top of an associated preview
@@ -51,7 +52,7 @@ import java.util.List;
  */
 public class GraphicOverlay extends View {
   private final Object lock = new Object();
-  private final List<Graphic> graphics = new ArrayList<>();
+  private final HashMap<String, Graphic> graphics = new HashMap<>();
   // Matrix for transforming from image coordinates to overlay view coordinates.
   private final Matrix transformationMatrix = new Matrix();
 
@@ -75,10 +76,12 @@ public class GraphicOverlay extends View {
    * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
    */
   public abstract static class Graphic {
-    private GraphicOverlay overlay;
+    private final GraphicOverlay overlay;
+    private final String key;
 
-    public Graphic(GraphicOverlay overlay) {
+    public Graphic(GraphicOverlay overlay, String key) {
       this.overlay = overlay;
+      this.key = key;
     }
 
     /**
@@ -207,6 +210,10 @@ public class GraphicOverlay extends View {
         paint.setARGB(255, 255 - v, 255 - v, 255);
       }
     }
+
+    protected boolean needsRemoved() {
+      return false;
+    }
   }
 
   public GraphicOverlay(Context context, AttributeSet attrs) {
@@ -219,7 +226,8 @@ public class GraphicOverlay extends View {
   /** Removes all graphics from the overlay. */
   public void clear() {
     synchronized (lock) {
-      graphics.clear();
+      graphics.entrySet().removeIf( entry -> entry.getValue().needsRemoved() );
+//      graphics.clear();
     }
     postInvalidate();
   }
@@ -227,14 +235,14 @@ public class GraphicOverlay extends View {
   /** Adds a graphic to the overlay. */
   public void add(Graphic graphic) {
     synchronized (lock) {
-      graphics.add(graphic);
+      graphics.put(graphic.key, graphic);
     }
   }
 
   /** Removes a graphic from the overlay. */
   public void remove(Graphic graphic) {
     synchronized (lock) {
-      graphics.remove(graphic);
+      graphics.remove(graphic.key);
     }
     postInvalidate();
   }
@@ -305,7 +313,7 @@ public class GraphicOverlay extends View {
     synchronized (lock) {
       updateTransformationIfNeeded();
 
-      for (Graphic graphic : graphics) {
+      for (Graphic graphic : graphics.values()) {
         graphic.draw(canvas);
       }
     }

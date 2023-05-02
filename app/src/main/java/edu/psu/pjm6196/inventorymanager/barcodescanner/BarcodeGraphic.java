@@ -36,15 +36,20 @@ public class BarcodeGraphic extends Graphic {
   private static final float TEXT_SIZE = 54.0f;
   private static final float STROKE_WIDTH = 4.0f;
 
+  private static final long LIFETIME_DURATION = 250;
+
   private final Paint rectPaint;
   private final Paint barcodePaint;
   private final Barcode barcode;
   private final Paint labelPaint;
 
+  private final long lastFound;
+
   BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
-    super(overlay);
+    super(overlay, barcode.getRawValue());
 
     this.barcode = barcode;
+    this.lastFound = System.currentTimeMillis();
 
     rectPaint = new Paint();
     rectPaint.setColor(MARKER_COLOR);
@@ -58,6 +63,11 @@ public class BarcodeGraphic extends Graphic {
     labelPaint = new Paint();
     labelPaint.setColor(MARKER_COLOR);
     labelPaint.setStyle(Paint.Style.FILL);
+  }
+
+  @Override
+  public boolean needsRemoved() {
+    return this.lastFound - System.currentTimeMillis() > LIFETIME_DURATION;
   }
 
   /**

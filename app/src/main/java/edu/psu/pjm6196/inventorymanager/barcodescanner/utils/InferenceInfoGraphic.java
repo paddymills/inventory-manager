@@ -19,9 +19,8 @@ package edu.psu.pjm6196.inventorymanager.barcodescanner.utils;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import androidx.annotation.Nullable;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
+import androidx.annotation.Nullable;
 
 /** Graphic instance for rendering inference info (latency, FPS, resolution) in an overlay view. */
 public class InferenceInfoGraphic extends edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay.Graphic {
@@ -43,7 +42,7 @@ public class InferenceInfoGraphic extends edu.psu.pjm6196.inventorymanager.barco
       long frameLatency,
       long detectorLatency,
       @Nullable Integer framesPerSecond) {
-    super(overlay);
+    super(overlay, "INFO_GRAPHIC");
     this.overlay = overlay;
     this.frameLatency = frameLatency;
     this.detectorLatency = detectorLatency;
