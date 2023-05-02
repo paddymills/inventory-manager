@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serializable;
+
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.Material;
@@ -17,23 +19,9 @@ import edu.psu.pjm6196.inventorymanager.db.Material;
 public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     private static final String TAG = "AddBarcode";
-
-    protected enum AddEditMode {
-        Add,
-        Edit;
-
-        public static AddEditMode fromId(int i) {
-            if ( i == 0 )
-                return AddEditMode.Add;
-
-            return AddEditMode.Edit;
-        }
-
-        public int id() {
-            return this == Add ? 0 : 1;
-        }
-    }
-    private AddEditMode mode;
+    public static final int ADD_MODE = 0;
+    public static final int EDIT_MOD = 1;
+    private int mode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +31,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         // handle data passed from other intents
         handleIntent(getIntent());
 
-        // TODO: impl location selector using spinner
+        // TODO: (after final) impl location selector using spinner
         findViewById(R.id.btn_change_loc).setVisibility(View.GONE);
 
         findViewById(R.id.btn_set_barcode)
@@ -59,7 +47,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     @Override
     protected int getToolbarTitleResId() {
-        if ( mode == AddEditMode.Add )
+        if ( mode == ADD_MODE )
             return R.string.add_title;
         else    // edit mode
             return R.string.edit_title;
@@ -73,27 +61,29 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle instanceState) {
         super.onSaveInstanceState(instanceState);
-        instanceState.putInt("mode", mode.id());
+        instanceState.putInt("mode", mode);
 
-        // TODO: persist form values
+        // TODO: impl Parcelable
+        instanceState.putSerializable("barcode", (Serializable) getFormValuesUnchecked());
+
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         super.onRestoreInstanceState(instanceState);
 
-        this.mode = AddEditMode.fromId( instanceState.getInt("mode", 0) );
+        this.mode = instanceState.getInt("mode", ADD_MODE);
 
         // TODO: get persisted form values
     }
 
     private void handleIntent(Intent intent) {
         if ( intent.hasExtra("mode") )
-            this.mode = AddEditMode.fromId( intent.getIntExtra("mode", 0) );
+            this.mode = intent.getIntExtra("mode", ADD_MODE);
 
         // TODO: edit mode
         if ( intent.hasExtra("barcode_id") ) {
-            // launched from scanner
+            // activity started from scanner (scanner has result)
             String scanned_barcode = intent.getStringExtra("barcode");
             Log.d(TAG, "Got barcode from scanner: " + scanned_barcode);
 
@@ -101,7 +91,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
             ((TextView) findViewById(R.id.barcode_id)).setText(scanned_barcode);
         }
 
-        if ( mode == AddEditMode.Edit ) {
+        if ( mode == EDIT_MOD ) {
             Barcode barcode = (Barcode) intent.getSerializableExtra("barcode");
             setFormValues(barcode);
         }
@@ -138,6 +128,21 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     private Barcode getFormValues() {
+        Barcode barcode = getFormValuesUnchecked();
+        if (
+            barcode.id_hash.equals("") ||
+            barcode.material.material_master.equals("") ||
+            barcode.material.grade.equals("") ||
+            barcode.material.location.equals("") ||
+            barcode.material.heat_number.equals("") ||
+            barcode.material.po_number.equals("")
+        )
+            return null;
+
+        return barcode;
+    }
+
+    private Barcode getFormValuesUnchecked() {
         // get values
         String id    = validateTextView(R.id.barcode_id, "Barcode ID");
         String mm    = validateTextView(R.id.txt_mm,"Material Master");
@@ -145,15 +150,6 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         String loc   = validateTextView(R.id.txt_loc, "Location");
         String heat  = validateTextView(R.id.txt_heat, "Heat Number");
         String po    = validateTextView(R.id.txt_po, "PO Number");
-        if (
-            id == null ||
-            mm == null ||
-            grade == null ||
-            loc == null ||
-            heat == null ||
-            po == null
-        )
-            return null;
 
         return new Barcode(0, id, new Material(mm, loc, grade, heat, po));
     }
