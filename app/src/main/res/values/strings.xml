@@ -9,16 +9,20 @@
     <string name="main_inventory">Take Inventory</string>
 
     <!--    Query activity-->
+    <string name="query_title">Barcodes Listing</string>
     <string name="query_location_label">Location</string>
     <string name="query_grade_label">Grade</string>
     <string name="query_heat_label">Heat Number</string>
     <string name="query_po_label">PO Number</string>
 
     <!--    Scan activity-->
+    <string name="scan_title">Barcode Scanner</string>
     <string name="scan_capture_bound">Pause Scanning</string>
     <string name="scan_capture_unbound">Resume Scanning</string>
 
     <!-- Add/Edit activity -->
+    <string name="add_title">Add Barcode</string>
+    <string name="edit_title">Edit Barcode</string>
     <string name="id_label">Barcode ID</string>
     <string name="loc_label">Location</string>
     <string name="grade_label">Grade</string>
@@ -41,6 +45,7 @@
     <string name="pref_misc_header">Miscellaneous</string>
 
     <!-- App Preferences -->
+    <string name="prefs_title">Settings</string>
     <string name="pref_app_home_activity">Default Home Page</string>
     <string name="pref_app_theme">App Theme</string>
     <!-- for setting default activity -->

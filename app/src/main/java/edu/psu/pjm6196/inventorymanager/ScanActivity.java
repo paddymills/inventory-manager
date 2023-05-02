@@ -105,6 +105,11 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     }
 
     @Override
+    protected int getToolbarTitleResId() {
+        return R.string.scan_title;
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -298,9 +303,9 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         Intent intent = new Intent(this, getCallingActivity().getClass());
 
         if ( scan_use_case.isSingleBarcodeScanUseCase() )
-            intent.putExtra("barcode", barcodeProcessor.getSelectedBarcodeId());
+            intent.putExtra("barcode_id", barcodeProcessor.getSelectedBarcodeId());
         else
-            intent.putExtra("barcodes", barcodeProcessor.getSelectedBarcodeIds());
+            intent.putExtra("barcode_ids", barcodeProcessor.getSelectedBarcodeIds());
 
         return true;
     }

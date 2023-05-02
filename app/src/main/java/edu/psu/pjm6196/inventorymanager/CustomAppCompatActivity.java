@@ -22,19 +22,10 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
 
         // setup toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(getToolbarTitleResId());
         setSupportActionBar(toolbar);
+
         toolbar.setNavigationOnClickListener(view -> this.onBackButtonClicked());
-    }
-
-    protected void onBackButtonClicked() {
-        Intent intent = new Intent(this, getCallingActivity().getClass());
-        setReturnToActivityArgs(intent);
-        startActivity(intent);
-    }
-
-    protected void setReturnToActivityArgs(Intent intent) {
-        // for passing data back to calling intent
-//        intent.putExtra("value_name", 0);
     }
 
     @Override
@@ -53,5 +44,20 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    protected int getToolbarTitleResId() {
+        return R.string.app_name;
+    }
+
+    protected void onBackButtonClicked() {
+        Intent intent = new Intent(this, getCallingActivity().getClass());
+        setReturnToActivityArgs(intent);
+        startActivity(intent);
+    }
+
+    protected void setReturnToActivityArgs(Intent intent) {
+        // for passing data back to calling intent
+//        intent.putExtra("value_name", 0);
     }
 }

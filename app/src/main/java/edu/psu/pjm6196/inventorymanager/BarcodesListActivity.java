@@ -14,6 +14,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +32,8 @@ import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
 
 public class BarcodesListActivity extends CustomAppCompatActivity {
 
+    private static final String TAG = "BarcodesListing";
+
     private BarcodeViewModel barcodeViewModel;
     private boolean filtered = false;
     @Override
@@ -45,6 +48,21 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
+
+        Intent callingIntent = getIntent();
+        if ( callingIntent.hasExtra("barcode") ) {
+            String scanned_barcode = callingIntent.getStringExtra("barcode");
+            Log.d(TAG, "Got barcode from scanner: " + scanned_barcode);
+            // TODO: filter list to either show barcode or show all with a particular attribute of scanned_barcode
+        }
+
+        findViewById(R.id.btn_launch_scanner)
+            .setOnClickListener(v -> {
+                Intent intent = new Intent(this, ScanActivity.class);
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FilterList);
+
+                startActivity(intent);
+            });
     }
 
     @Override
@@ -63,10 +81,28 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_filter) {
+            // toggle filtering
+            filtered = !filtered;
+
             return filterMaterial();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle instanceState) {
+        super.onSaveInstanceState(instanceState);
+        instanceState.putBoolean("filtered", filtered);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle instanceState) {
+        super.onRestoreInstanceState(instanceState);
+
+        filtered = instanceState.getBoolean("filtered", false);
+        if ( filtered )
+            filterMaterial();
     }
 
     public void displayMaterial(int id) {
@@ -86,9 +122,6 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     }
 
     public boolean filterMaterial() {
-        // toggle filtering
-        filtered = !filtered;
-
         // set icon
         MenuItem menu_item = findViewById(R.id.menu_filter);
         if (filtered)
