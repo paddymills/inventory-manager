@@ -10,11 +10,11 @@ import android.os.Bundle;
 import android.util.Size;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.PreferenceFragmentCompat;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends CustomAppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,13 +39,13 @@ public class SettingsActivity extends AppCompatActivity {
 
             ListPreference pref = findPreference("camera_resolution");
             if ( pref != null ) {
-                String[] entries = get_camera_resolution_entries(pref);
+                String[] entries = get_camera_resolution_entries();
                 pref.setEntries(entries);
                 pref.setEntryValues(entries);
             }
         }
 
-        private String[] get_camera_resolution_entries(ListPreference pref) {
+        private String[] get_camera_resolution_entries() {
             CameraCharacteristics cameraChars = getCameraCharacteristics();
 
             String[] entries;
@@ -76,7 +76,11 @@ public class SettingsActivity extends AppCompatActivity {
 
         public CameraCharacteristics getCameraCharacteristics() {
             try {
-                CameraManager cameraManager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+                FragmentActivity activity = getActivity();
+                if ( activity == null )
+                    return null;
+
+                CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
 
                 for (String id : cameraManager.getCameraIdList()) {
                     CameraCharacteristics cam_chars = cameraManager.getCameraCharacteristics(id);
@@ -89,8 +93,6 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             } catch (CameraAccessException e) {
                 // Accessing camera ID info got error
-            } catch ( NullPointerException e ) {
-                // getActivity() returned null
             }
 
             return null;
