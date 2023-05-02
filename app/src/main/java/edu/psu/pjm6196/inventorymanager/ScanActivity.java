@@ -5,6 +5,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -26,7 +30,7 @@ import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraXViewModel;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
-public class ScanActivity extends CustomAppCompatActivity {
+public class ScanActivity extends CustomAppCompatActivity implements View.OnTouchListener {
 
     /*
         This class and its supporting classes/utilities are either copied from (where noted)
@@ -41,6 +45,7 @@ public class ScanActivity extends CustomAppCompatActivity {
     public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
+    private Menu toolbar;
 
     private ProcessCameraProvider cameraProvider;
     private CameraSelector cameraSelector;
@@ -89,6 +94,17 @@ public class ScanActivity extends CustomAppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.scan_menu, menu);
+
+        menu.getItem(0).setVisible(false);
+        toolbar = menu;
+
+        return true;
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -109,6 +125,8 @@ public class ScanActivity extends CustomAppCompatActivity {
     private void postPermissionsGrantedSetup() {
         previewView = findViewById(R.id.scan_preview);
         graphicOverlay = findViewById(R.id.scan_overlay);
+
+        graphicOverlay.setOnTouchListener(this);
 
         // if we need to dynamically select camera lens use CameraSelector.Builder
         cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraLens).build();
@@ -136,6 +154,36 @@ public class ScanActivity extends CustomAppCompatActivity {
 
             scanning_is_paused = !scanning_is_paused;
         });
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        // to handle touch event on GraphicOverlay
+        if ( motionEvent.getAction() == MotionEvent.ACTION_DOWN ) {
+
+            float x = motionEvent.getX();
+            float y = motionEvent.getY();
+            if ( barcodeProcessor.handleTouchEvent((int) x, (int) y) ) {
+                // touch occurred in at least 1 barcode
+                long numSelected = barcodeProcessor.getNumberOfBarcodesSelected();
+                if ( numSelected == 0 ) {
+                    Log.d(TAG, "No barcodes selected");
+                    toolbar.getItem(0).setVisible(false);
+                } else if ( numSelected > 1 && this.scan_use_case.isSingleBarcodeScanUseCase() ) {
+                    Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
+                    toolbar.getItem(0).setVisible(false);
+                } else {
+                    Log.d(TAG, "Barcodes selected");
+                    toolbar.getItem(0)
+                        .setEnabled(true)
+                        .setOnMenuItemClickListener(item -> returnResult());
+                }
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -244,5 +292,16 @@ public class ScanActivity extends CustomAppCompatActivity {
 
                 barcodeProcessor.processImageProxy(imageProxy, graphicOverlay);
             });
+    }
+
+    private boolean returnResult() {
+        Intent intent = new Intent(this, getCallingActivity().getClass());
+
+        if ( scan_use_case.isSingleBarcodeScanUseCase() )
+            intent.putExtra("barcode", barcodeProcessor.getSelectedBarcodeId());
+        else
+            intent.putExtra("barcodes", barcodeProcessor.getSelectedBarcodeIds());
+
+        return true;
     }
 }

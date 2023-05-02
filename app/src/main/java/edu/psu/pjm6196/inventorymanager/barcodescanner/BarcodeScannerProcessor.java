@@ -17,6 +17,9 @@
 package edu.psu.pjm6196.inventorymanager.barcodescanner;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
 
@@ -32,11 +35,13 @@ import com.google.mlkit.vision.common.InputImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 
 /** Barcode Detector Demo. */
 public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> {
+  // TODO: handle already scanned items in take inventory process
 
   private static final String TAG = "BarcodeProcessor";
   private static final long LIFETIME_DURATION = 250;
@@ -45,21 +50,48 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
 
   private HashMap<String, ScannedBarcode> barcodes;
 
-  private static class ScannedBarcode {
-    private Barcode barcode;
-    private long lastScannedTime;
+  private static class ScannedBarcode extends BarcodeGraphic {
 
-    public ScannedBarcode(Barcode barcode) {
-      this.barcode = barcode;
+    private static int UNSELECTED_COLOR = BarcodeGraphic.MARKER_COLOR;
+    private static int SELECTED_COLOR = Color.GREEN;
+    private final long lastScannedTime;
+    private boolean isSelected;
+
+    public ScannedBarcode(GraphicOverlay overlay, Barcode barcode) {
+      super(overlay, barcode);
+
       this.lastScannedTime = System.currentTimeMillis();
+    }
+
+    public void setBarcode(Barcode barcode) {
+      this.barcode = barcode;
     }
 
     public boolean needsRemoved() {
       return this.lastScannedTime - System.currentTimeMillis() > LIFETIME_DURATION;
     }
 
-    public String getKey() {
-      return this.barcode.getRawValue();
+    @Override
+    protected void setGraphicPaints() {
+      int fillColor = this.isSelected ? SELECTED_COLOR : UNSELECTED_COLOR;
+
+      rectPaint = new Paint();
+      rectPaint.setColor(fillColor);
+      rectPaint.setStyle(Paint.Style.STROKE);
+      rectPaint.setStrokeWidth(BarcodeGraphic.STROKE_WIDTH);
+
+      barcodePaint = new Paint();
+      barcodePaint.setColor(BarcodeGraphic.TEXT_COLOR);
+      barcodePaint.setTextSize(TEXT_SIZE);
+
+      labelPaint = new Paint();
+      labelPaint.setColor(fillColor);
+      labelPaint.setStyle(Paint.Style.FILL);
+    }
+    @Override
+    public void draw(Canvas canvas) {
+      setGraphicPaints();
+      super.draw(canvas);
     }
   }
 
@@ -73,6 +105,37 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
             .setBarcodeFormats(Barcode.FORMAT_PDF417)
             .build()
     );
+  }
+
+  public boolean handleTouchEvent(int x, int y) {
+    boolean barcodeTouchOccurred = false;
+
+    for (ScannedBarcode barcode : barcodes.values()) {
+      if (barcode.barcode.getBoundingBox().contains(x, y)) {
+        barcode.isSelected = !barcode.isSelected;
+        Log.d(TAG, "Barcode " + barcode.barcode.getRawValue() + " selected");
+
+        barcodeTouchOccurred = true;
+      }
+    }
+
+    return barcodeTouchOccurred;
+  }
+
+  private Stream<ScannedBarcode> selectedBarcodes() {
+    return barcodes.values().stream().filter(x -> x.isSelected);
+  }
+  public long getNumberOfBarcodesSelected() {
+    return selectedBarcodes().count();
+  }
+
+  public String[] getSelectedBarcodeIds() {
+    return (String[]) selectedBarcodes().map(x -> x.barcode.getRawValue()).toArray();
+  }
+  public String getSelectedBarcodeId() {
+    assert getNumberOfBarcodesSelected() == 1;
+
+    return getSelectedBarcodeIds()[0];
   }
 
   @Override
@@ -95,9 +158,20 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
 
     for (int i = 0; i < barcodes.size(); ++i) {
       Barcode barcode = barcodes.get(i);
-      this.barcodes.put(barcode.getRawValue(), new ScannedBarcode(barcode));
 
-      graphicOverlay.add(barcode.getRawValue(), new BarcodeGraphic(graphicOverlay, barcode));
+      String key = barcode.getRawValue();
+      ScannedBarcode sb = new ScannedBarcode(graphicOverlay, barcode);
+
+      ScannedBarcode currentVal = this.barcodes.putIfAbsent(key, sb);
+      if ( currentVal != null ) {
+        // barcode exists -> retain existing attributes
+        currentVal.setBarcode(barcode);
+        sb = currentVal;
+
+        this.barcodes.put(key, sb);
+      }
+
+      graphicOverlay.add(key, sb);
       logExtrasForTesting(barcode);
     }
   }

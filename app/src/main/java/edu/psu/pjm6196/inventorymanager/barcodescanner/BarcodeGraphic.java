@@ -31,24 +31,27 @@ import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay.Grap
 /** Graphic instance for rendering Barcode position and content information in an overlay view. */
 public class BarcodeGraphic extends Graphic {
 
-  private static final int TEXT_COLOR = Color.BLACK;
-  private static final int MARKER_COLOR = Color.WHITE;
-  private static final float TEXT_SIZE = 54.0f;
-  private static final float STROKE_WIDTH = 4.0f;
+  protected static final int TEXT_COLOR = Color.BLACK;
+  protected static final int MARKER_COLOR = Color.WHITE;
+  protected static final float TEXT_SIZE = 54.0f;
+  protected static final float STROKE_WIDTH = 4.0f;
 
-  private final Paint rectPaint;
-  private final Paint barcodePaint;
-  private final Barcode barcode;
-  private final Paint labelPaint;
-
-  private final long lastFound;
+  protected Paint rectPaint;
+  protected Paint barcodePaint;
+  protected Paint labelPaint;
+  protected Barcode barcode;
 
   BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
     super(overlay);
 
     this.barcode = barcode;
-    this.lastFound = System.currentTimeMillis();
+    setGraphicPaints();
+  }
 
+  /**
+   * Draws the barcode block annotations for position, size, and raw value on the supplied canvas.
+   */
+  protected void setGraphicPaints() {
     rectPaint = new Paint();
     rectPaint.setColor(MARKER_COLOR);
     rectPaint.setStyle(Paint.Style.STROKE);
@@ -62,10 +65,6 @@ public class BarcodeGraphic extends Graphic {
     labelPaint.setColor(MARKER_COLOR);
     labelPaint.setStyle(Paint.Style.FILL);
   }
-
-  /**
-   * Draws the barcode block annotations for position, size, and raw value on the supplied canvas.
-   */
   @Override
   public void draw(Canvas canvas) {
     if (barcode == null) {

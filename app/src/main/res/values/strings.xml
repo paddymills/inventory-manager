@@ -32,6 +32,7 @@
     <!-- Navigation Bar -->
     <string name="menu_settings">Settings</string>
     <string name="menu_filter">Filter</string>
+    <string name="menu_submit">Submit</string>
 
     <!-- Preference Titles -->
     <string name="pref_app_header">App</string>
