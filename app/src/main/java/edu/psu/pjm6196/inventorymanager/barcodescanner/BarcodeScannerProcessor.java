@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
@@ -41,12 +42,12 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
 
   public BarcodeScannerProcessor(Context context) {
     super(context);
-    // Note that if you know which format of barcode your app is dealing with, detection will be
-    // faster to specify the supported barcode formats one by one, e.g.
-    // new BarcodeScannerOptions.Builder()
-    //     .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-    //     .build();
-    barcodeScanner = BarcodeScanning.getClient();
+    barcodeScanner = BarcodeScanning.getClient(
+        // detection is much faster if we specify the format, but this is optional
+        new BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_PDF417)
+            .build()
+    );
   }
 
   @Override

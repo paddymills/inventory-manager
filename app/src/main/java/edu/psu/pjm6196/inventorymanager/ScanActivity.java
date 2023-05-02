@@ -29,6 +29,12 @@ import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 public class ScanActivity extends CustomAppCompatActivity {
+
+    /*
+        This class and its supporting classes/utilities are either copied from (where noted)
+        or heavily influenced by the design of Google's sample codebase
+        at https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart
+     */
     private static final String TAG = "ScanActivity";
 
     private static final String[] CAMERA_PERMISSION = new String[] {Manifest.permission.CAMERA};
@@ -43,7 +49,7 @@ public class ScanActivity extends CustomAppCompatActivity {
     private Preview preview;
     private ImageAnalysis imageAnalysis;
     private BarcodeScannerProcessor barcodeProcessor;
-    private boolean needUpdateGraphicOverlayImageSourceInfo;
+    private boolean requiresImageSourceUpdate;
     private boolean scanning_is_paused;
     private CallingActivityIntent scan_use_case;
 
@@ -200,13 +206,13 @@ public class ScanActivity extends CustomAppCompatActivity {
 //        imageAnalysisBuilder.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST);
         imageAnalysis = imageAnalysisBuilder.build();
 
-        needUpdateGraphicOverlayImageSourceInfo = true;
+        requiresImageSourceUpdate = true;
         imageAnalysis.setAnalyzer(
             // imageProcessor.processImageProxy will use another thread to run the detection underneath,
             // thus we can just runs the analyzer itself on main thread.
             ContextCompat.getMainExecutor(this),
             imageProxy -> {
-                if (needUpdateGraphicOverlayImageSourceInfo) {
+                if (requiresImageSourceUpdate) {
                     boolean isImageFlipped = false;
 
                     int width  = imageProxy.getWidth();
@@ -221,7 +227,7 @@ public class ScanActivity extends CustomAppCompatActivity {
                             graphicOverlay.setImageSourceInfo(height, width, isImageFlipped);
                     }
 
-                    needUpdateGraphicOverlayImageSourceInfo = false;
+                    requiresImageSourceUpdate = false;
                 }
 
                 barcodeProcessor.processImageProxy(imageProxy, graphicOverlay);
