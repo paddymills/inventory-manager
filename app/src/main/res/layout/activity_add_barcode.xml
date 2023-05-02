@@ -111,11 +111,14 @@
         app:layout_constraintEnd_toEndOf="@id/label_grade"
         app:layout_constraintTop_toBottomOf="@id/label_grade"/>
 
-    <TextView
+<!--    TODO: change to textview once change location spinner is impl-->
+    <EditText
         android:id="@+id/txt_loc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="60dp"
+        android:inputType="text"
+        android:autofillHints="Location"
         app:layout_constraintBaseline_toBaselineOf="@id/label_loc"
         app:layout_constraintStart_toStartOf="@+id/txt_grade" />
 
