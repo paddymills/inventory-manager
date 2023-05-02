@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -24,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.List;
 
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
@@ -108,12 +110,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     public void displayMaterial(int id) {
         BarcodeDatabase.getBarcode(id, barcode -> {
             Bundle args = new Bundle();
-            args.putInt("barcode_id", barcode.id);
-            args.putString("material", barcode.material.material_master);
-            args.putString("grade", barcode.material.grade);
-            args.putString("loc", barcode.material.location);
-            args.putString("heat", barcode.material.heat_number);
-            args.putString("po", barcode.material.po_number);
+            args.putSerializable("barcode", (Serializable) barcode);
 
             BarcodeDisplayFragment barcodeDisplay = new BarcodeDisplayFragment();
             barcodeDisplay.setArguments(args);
@@ -122,13 +119,6 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     }
 
     public boolean filterMaterial() {
-        // set icon
-        MenuItem menu_item = findViewById(R.id.menu_filter);
-        if (filtered)
-            menu_item.setIcon(R.drawable.ic_nofilter);
-        else
-            menu_item.setIcon(R.drawable.ic_filter);
-
         // set recycler view to have filtered/non-filtered list
         RecyclerView recycler = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
@@ -138,6 +128,13 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
 
+        // set icon
+        MenuItem menu_item = findViewById(R.id.menu_filter);
+        if (filtered)
+            menu_item.setIcon(R.drawable.ic_nofilter);
+        else
+            menu_item.setIcon(R.drawable.ic_filter);
+
         // display toast of what happened
         String message = filtered ? "Barcodes filtered" : "Filter removed";
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
@@ -145,11 +142,15 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         return true;
     }
 
-    public void editMaterial(int barcode_id) {
+    public void editMaterial(Barcode barcode) {
         Intent add_barcode = new Intent(this, AddBarcodeActivity.class);
-        add_barcode.putExtra("barcode_id", barcode_id);
+        add_barcode.putExtra("barcode", (Serializable) barcode);
 
         startActivity(add_barcode);
+    }
+
+    public void deleteMaterial(Barcode barcode) {
+        BarcodeDatabase.getDatabase(this).barcodeDAO().delete(barcode);
     }
 
     public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.BarcodeViewHolder> {
@@ -175,6 +176,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(BarcodesListActivity.this);
 //                SharedPreferences.Editor editor = prefs.edit();
+                // TODO: hide attr if it is being filtered on (will need a setting added for this)
                 if ( !prefs.getBoolean("display_location", true) )
                       extras_location.setVisibility(View.GONE);
                 if ( !prefs.getBoolean("display_grade", true) )
@@ -239,6 +241,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             return barcodes.size();
         }
 
+        @SuppressLint("NotifyDataSetChanged")
         void setBarcodes(List<Barcode> barcodes) {
             this.barcodes = barcodes;
             notifyDataSetChanged();
@@ -246,32 +249,28 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
     }
 
-    public static class BarcodeDisplayFragment extends DialogFragment {
-        int barcode_id;
+    public class BarcodeDisplayFragment extends DialogFragment {
 
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-            barcode_id = getArguments().getInt("barcode_id");
-            final String material = getArguments().getString("material");
-            final String grade = getArguments().getString("grade");
-            final String loc = getArguments().getString("loc");
-            final String heat = getArguments().getString("heat");
-            final String po = getArguments().getString("po");
+            assert getArguments() != null;
+            Barcode barcode = (Barcode) getArguments().getSerializable("barcode");
 
             builder
                 .setTitle("Material Info")
                 .setMessage(
-                    "Material: " + material + "\n" +
-                    "Grade: " + grade + "\n" +
-                    "Location: " + loc + "\n" +
-                    "Heat #:" + heat + "\n" +
-                    "PO #:" + po
+                    "Barcode ID: " + barcode.id_hash + "\n" +
+                    "Material: " + barcode.material.material_master + "\n" +
+                    "Grade: " + barcode.material.grade + "\n" +
+                    "Location: " + barcode.material.location + "\n" +
+                    "Heat #:" + barcode.material.heat_number + "\n" +
+                    "PO #:" + barcode.material.po_number
                 )
-                .setPositiveButton("Edit", (dialog, id) -> ((BarcodesListActivity) getActivity()).editMaterial(barcode_id))
-//                    .setNegativeButton("Delete", (dialog, id) -> {});
+                .setPositiveButton("Edit", (dialog, id) -> BarcodesListActivity.this.editMaterial(barcode))
+                .setNegativeButton("Delete", (dialog, id) -> BarcodesListActivity.this.deleteMaterial(barcode))
                 .setNeutralButton("Return", (dialog, id) -> {});
 
             return builder.create();
