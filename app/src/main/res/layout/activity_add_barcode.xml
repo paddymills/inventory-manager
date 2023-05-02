@@ -55,6 +55,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:contentDescription="@string/set_barcode_desc"
+        android:minHeight="48dp"
         android:src="@drawable/ic_qrcode"
         app:layout_constraintBottom_toBottomOf="@+id/barcode_id"
         app:layout_constraintEnd_toEndOf="parent"
@@ -75,9 +76,10 @@
         android:id="@+id/txt_mm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:autofillHints="Material Master"
         android:ems="10"
         android:inputType="text"
-        android:autofillHints="Material Master"
+        android:minHeight="48dp"
         app:layout_constraintBaseline_toBaselineOf="@id/label_mm"
         app:layout_constraintStart_toStartOf="@+id/barcode_id" />
 
@@ -95,9 +97,10 @@
         android:id="@+id/txt_grade"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:autofillHints="Grade"
         android:ems="10"
         android:inputType="text"
-        android:autofillHints="Grade"
+        android:minHeight="48dp"
         app:layout_constraintBaseline_toBaselineOf="@id/label_grade"
         app:layout_constraintStart_toStartOf="@+id/txt_mm" />
 
@@ -116,9 +119,10 @@
         android:id="@+id/txt_loc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minWidth="60dp"
-        android:inputType="text"
         android:autofillHints="Location"
+        android:inputType="text"
+        android:minWidth="60dp"
+        android:minHeight="48dp"
         app:layout_constraintBaseline_toBaselineOf="@id/label_loc"
         app:layout_constraintStart_toStartOf="@+id/txt_grade" />
 
@@ -146,9 +150,10 @@
         android:id="@+id/txt_heat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:autofillHints="Heat Number"
         android:ems="10"
         android:inputType="text"
-        android:autofillHints="Heat Number"
+        android:minHeight="48dp"
         app:layout_constraintBaseline_toBaselineOf="@id/label_heat"
         app:layout_constraintStart_toStartOf="@+id/txt_loc" />
 
@@ -158,7 +163,7 @@
         android:layout_height="wrap_content"
         android:text="@string/po_label"
         android:labelFor="@id/txt_po"
-        app:layout_constraintBottom_toTopOf="@id/button3"
+        app:layout_constraintBottom_toTopOf="@id/btn_submit"
         app:layout_constraintEnd_toEndOf="@id/label_heat"
         app:layout_constraintTop_toBottomOf="@id/label_heat" />
 
@@ -166,14 +171,15 @@
         android:id="@+id/txt_po"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:autofillHints="PO Number"
         android:ems="10"
         android:inputType="number"
-        android:autofillHints="PO Number"
+        android:minHeight="48dp"
         app:layout_constraintBaseline_toBaselineOf="@id/label_po"
         app:layout_constraintStart_toStartOf="@+id/txt_heat" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/btn_submit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/submit_btn_text"
