@@ -24,10 +24,11 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
+
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
+
 import java.util.HashMap;
 
 /**
@@ -75,12 +76,9 @@ public class GraphicOverlay extends View {
    * instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
    */
   public abstract static class Graphic {
-    private GraphicOverlay overlay;
-    private String key;
+    private final GraphicOverlay overlay;
+    private final String key;
 
-    public Graphic(GraphicOverlay overlay) {
-      this.overlay = overlay;
-    }
     public Graphic(GraphicOverlay overlay, String key) {
       this.overlay = overlay;
       this.key = key;
@@ -212,6 +210,10 @@ public class GraphicOverlay extends View {
         paint.setARGB(255, 255 - v, 255 - v, 255);
       }
     }
+
+    protected boolean needsRemoved() {
+      return false;
+    }
   }
 
   public GraphicOverlay(Context context, AttributeSet attrs) {
@@ -224,7 +226,8 @@ public class GraphicOverlay extends View {
   /** Removes all graphics from the overlay. */
   public void clear() {
     synchronized (lock) {
-      graphics.clear();
+      graphics.entrySet().removeIf( entry -> entry.getValue().needsRemoved() );
+//      graphics.clear();
     }
     postInvalidate();
   }
@@ -232,9 +235,6 @@ public class GraphicOverlay extends View {
   /** Adds a graphic to the overlay. */
   public void add(Graphic graphic) {
     synchronized (lock) {
-      if ( graphic.key.equals("INFO_GRAPHIC") && graphics.containsKey(graphic.key) )
-        Log.e("GraphicOverlay", "duplicate INFO_GRAPHIC created");
-
       graphics.put(graphic.key, graphic);
     }
   }
