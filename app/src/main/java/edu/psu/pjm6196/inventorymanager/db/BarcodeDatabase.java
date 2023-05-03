@@ -52,6 +52,10 @@ public abstract class BarcodeDatabase extends RoomDatabase {
         }
     };
 
+    public static void ensureInstanceIsSet(Context context) {
+        getDatabase(context);
+    }
+
     private static void createBarcodeTable() {
         for (int i=0; i<TestData.ids.length; i++)
             insert( new Barcode(0, TestData.ids[i], TestData.materials[i]) );
@@ -67,10 +71,26 @@ public abstract class BarcodeDatabase extends RoomDatabase {
         };
 
         (new Thread(() -> {
-            Message message = handler.obtainMessage();
-            message.obj = INSTANCE.barcodeDAO().getById(id);
+            Message msg = handler.obtainMessage();
+            msg.obj = INSTANCE.barcodeDAO().getById(id);
 
-            handler.sendMessage(message);
+            handler.sendMessage(msg);
+        })).start();
+    }
+
+    public static void getBarcodeByIdHash(String id_hash, BarcodeListener listener) {
+        Handler handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                listener.onBarcodeReturned((Barcode) msg.obj);
+            }
+        };
+
+        (new Thread(() -> {
+            Message msg = handler.obtainMessage();
+            msg.obj = INSTANCE.barcodeDAO().getByIdHash(id_hash);
+            handler.sendMessage(msg);
         })).start();
     }
 
