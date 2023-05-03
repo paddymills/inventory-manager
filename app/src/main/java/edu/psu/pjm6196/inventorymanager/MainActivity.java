@@ -20,7 +20,12 @@ public class MainActivity extends CustomAppCompatActivity {
             );
 
         findViewById(R.id.btn_move)
-            .setOnClickListener(v -> startActivity(new Intent(this, ScanActivity.class)));
+            .setOnClickListener(v -> {
+                Intent intent = new Intent(this, ScanActivity.class);
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MoveMaterial);
+
+                startActivity(intent);
+            });
 
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
