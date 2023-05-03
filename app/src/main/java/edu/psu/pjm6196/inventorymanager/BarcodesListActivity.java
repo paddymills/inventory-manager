@@ -146,6 +146,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         add_barcode.putExtra("mode", AddBarcodeActivity.EDIT_MODE);
         add_barcode.putExtra("barcode", barcode);
 
+        // TODO: do we need to persist the open dialog that launched this?
         startActivity(add_barcode);
     }
 
