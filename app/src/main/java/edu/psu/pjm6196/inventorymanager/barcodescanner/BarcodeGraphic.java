@@ -26,7 +26,7 @@ import android.graphics.RectF;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay.Graphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.Graphic;
 
 /** Graphic instance for rendering Barcode position and content information in an overlay view. */
 public class BarcodeGraphic extends Graphic {

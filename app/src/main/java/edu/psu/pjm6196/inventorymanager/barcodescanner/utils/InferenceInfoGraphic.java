@@ -23,7 +23,7 @@ import android.graphics.Paint;
 import androidx.annotation.Nullable;
 
 /** Graphic instance for rendering inference info (latency, FPS, resolution) in an overlay view. */
-public class InferenceInfoGraphic extends edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay.Graphic {
+public class InferenceInfoGraphic extends Graphic {
 
   private static final int TEXT_COLOR = Color.WHITE;
   private static final float TEXT_SIZE = 60.0f;

@@ -17,9 +17,6 @@
 package edu.psu.pjm6196.inventorymanager.barcodescanner;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
 
@@ -32,9 +29,9 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
@@ -44,60 +41,14 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   // TODO: handle already scanned items in take inventory process
 
   private static final String TAG = "BarcodeProcessor";
-  private static final long LIFETIME_DURATION = 250;
 
   private final BarcodeScanner barcodeScanner;
 
-  private HashMap<String, ScannedBarcode> barcodes;
-
-  private static class ScannedBarcode extends BarcodeGraphic {
-
-    private static int UNSELECTED_COLOR = BarcodeGraphic.MARKER_COLOR;
-    private static int SELECTED_COLOR = Color.GREEN;
-    private final long lastScannedTime;
-    private boolean isSelected;
-
-    public ScannedBarcode(GraphicOverlay overlay, Barcode barcode) {
-      super(overlay, barcode);
-
-      this.lastScannedTime = System.currentTimeMillis();
-    }
-
-    public void setBarcode(Barcode barcode) {
-      this.barcode = barcode;
-    }
-
-    public boolean needsRemoved() {
-      return this.lastScannedTime - System.currentTimeMillis() > LIFETIME_DURATION;
-    }
-
-    @Override
-    protected void setGraphicPaints() {
-      int fillColor = this.isSelected ? SELECTED_COLOR : UNSELECTED_COLOR;
-
-      rectPaint = new Paint();
-      rectPaint.setColor(fillColor);
-      rectPaint.setStyle(Paint.Style.STROKE);
-      rectPaint.setStrokeWidth(BarcodeGraphic.STROKE_WIDTH);
-
-      barcodePaint = new Paint();
-      barcodePaint.setColor(BarcodeGraphic.TEXT_COLOR);
-      barcodePaint.setTextSize(TEXT_SIZE);
-
-      labelPaint = new Paint();
-      labelPaint.setColor(fillColor);
-      labelPaint.setStyle(Paint.Style.FILL);
-    }
-    @Override
-    public void draw(Canvas canvas) {
-      setGraphicPaints();
-      super.draw(canvas);
-    }
-  }
+  private final ConcurrentHashMap<String, ScannedBarcode> barcodes;
 
   public BarcodeScannerProcessor(Context context) {
     super(context);
-    barcodes = new HashMap<>();
+    barcodes = new ConcurrentHashMap<>();
 
     barcodeScanner = BarcodeScanning.getClient(
         // detection is much faster if we specify the format, but this is optional
@@ -107,12 +58,12 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     );
   }
 
-  public boolean handleTouchEvent(int x, int y) {
+  public boolean handleTouchEvent(float x, float y) {
     boolean barcodeTouchOccurred = false;
 
     for (ScannedBarcode barcode : barcodes.values()) {
-      if (barcode.barcode.getBoundingBox().contains(x, y)) {
-        barcode.isSelected = !barcode.isSelected;
+      if (barcode.isTouchInRect(x, y)) {
+        barcode.toggleSelected();
         Log.d(TAG, "Barcode " + barcode.barcode.getRawValue() + " selected");
 
         barcodeTouchOccurred = true;
@@ -123,7 +74,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   }
 
   private Stream<ScannedBarcode> selectedBarcodes() {
-    return barcodes.values().stream().filter(x -> x.isSelected);
+    return barcodes.values().stream().filter(ScannedBarcode::isSelected);
   }
   public long getNumberOfBarcodesSelected() {
     return selectedBarcodes().count();
@@ -132,6 +83,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   public String[] getSelectedBarcodeIds() {
     return (String[]) selectedBarcodes().map(x -> x.barcode.getRawValue()).toArray();
   }
+
   public String getSelectedBarcodeId() {
     assert getNumberOfBarcodesSelected() == 1;
 
@@ -150,14 +102,14 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   }
 
   @Override
-  protected void onSuccess(@NonNull List<Barcode> barcodes, @NonNull GraphicOverlay graphicOverlay) {
-    if (barcodes.isEmpty()) {
+  protected void onSuccess(@NonNull List<Barcode> detectedBarcodes, @NonNull GraphicOverlay graphicOverlay) {
+    if (detectedBarcodes.isEmpty()) {
       Log.v(MANUAL_TESTING_LOG, "No barcode has been detected");
       validateBarcodesDisplayed(graphicOverlay);
     }
 
-    for (int i = 0; i < barcodes.size(); ++i) {
-      Barcode barcode = barcodes.get(i);
+    for (int i = 0; i < detectedBarcodes.size(); ++i) {
+      Barcode barcode = detectedBarcodes.get(i);
 
       String key = barcode.getRawValue();
       ScannedBarcode sb = new ScannedBarcode(graphicOverlay, barcode);
