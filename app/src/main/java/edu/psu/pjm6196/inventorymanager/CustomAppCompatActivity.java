@@ -58,7 +58,7 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
     }
 
     protected Class<?> getBackButtonClass() {
-        return getCallingActivity().getClass();
+        return MainActivity.class;
     }
 
     protected void setReturnToActivityArgs(Intent intent) {
