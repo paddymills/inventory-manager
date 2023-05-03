@@ -9,6 +9,8 @@ import androidx.camera.core.resolutionselector.ResolutionStrategy;
 import androidx.preference.PreferenceManager;
 
 public class PreferenceUtils {
+    private static final int DEFAULT_LIFETIME = 1;
+
     public static ResolutionSelector getTargetCameraResolution(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String targetResolution = prefs.getString("camera_resolution", null);
@@ -35,5 +37,13 @@ public class PreferenceUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         return prefs.getBoolean("debug_mode", false);
+    }
+
+    public static int getBarcodeLifetime(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        return Integer.parseInt(
+            prefs.getString("lifetime_duration", String.valueOf(DEFAULT_LIFETIME))
+        ) * 1000;
     }
 }

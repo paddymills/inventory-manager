@@ -69,6 +69,9 @@
     <string name="pref_auto_scan_off">Barcodes will only be read when initiated by the scan button</string>
     <string name="fetch_data_title">…fetching…</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    <string name="lifetime_duration_title">Scanned Barcode Lifetime</string>
+    <string name="lifetime_duration_summary">How long a barcode will remain displayed after it is last captured.</string>
+    <string name="lifetime_duration_default">1000</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>

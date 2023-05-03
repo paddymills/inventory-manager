@@ -1,23 +1,25 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory app:title="@string/pref_app_header">
+<!--    <PreferenceCategory app:title="@string/pref_app_header">-->
 
-        <ListPreference
-            app:defaultValue="@string/default_activity"
-            app:entries="@array/activities"
-            app:entryValues="@array/activities_keys"
-            app:useSimpleSummaryProvider="true"
-            app:key="default_activity"
-            app:title="@string/pref_app_home_activity" />
+<!--        <ListPreference-->
+<!--            app:defaultValue="@string/default_activity"-->
+<!--            app:entries="@array/activities"-->
+<!--            app:entryValues="@array/activities_keys"-->
+<!--            app:useSimpleSummaryProvider="true"-->
+<!--            app:key="default_activity"-->
+<!--            app:title="@string/pref_app_home_activity" />-->
 
-        <ListPreference
-            app:entries="@array/themes"
-            app:entryValues="@array/themes_keys"
-            app:useSimpleSummaryProvider="true"
-            app:key="theme"
-            app:title="@string/pref_app_theme" />
+<!--        <ListPreference-->
+<!--            app:entries="@array/themes"-->
+<!--            app:entryValues="@array/themes_keys"-->
+<!--            app:useSimpleSummaryProvider="true"-->
+<!--            app:key="theme"-->
+<!--            app:title="@string/pref_app_theme" />-->
 
-    </PreferenceCategory>
+<!--    </PreferenceCategory>-->
 
     <PreferenceCategory app:title="Camera">
         <ListPreference
@@ -27,6 +29,14 @@
             app:key="live_preview"
             app:title="Live Preview"
             app:summary="@string/enable_preview_summary" />
+
+        <ListPreference
+            app:defaultValue="@string/lifetime_duration_default"
+            app:entries="@array/camera_lifetime_keys"
+            app:entryValues="@array/camera_lifetime_vals"
+            app:key="lifetime_duration"
+            app:title="@string/lifetime_duration_title"
+            app:summary="@string/lifetime_duration_summary" />
     </PreferenceCategory>
 
     <PreferenceCategory
