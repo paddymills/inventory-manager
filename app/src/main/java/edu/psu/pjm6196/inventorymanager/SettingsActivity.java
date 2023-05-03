@@ -1,6 +1,7 @@
 package edu.psu.pjm6196.inventorymanager;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -8,6 +9,7 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Bundle;
 import android.util.Size;
+import android.view.View;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.FragmentActivity;
@@ -30,6 +32,14 @@ public class SettingsActivity extends CustomAppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    @Override
+    protected void onBackButtonClicked(View view) {
+        Intent intent = new Intent(this, getBackButtonClass());
+        intent.putExtra("called_from_settings", true);
+        setReturnToActivityArgs(intent);
+        startActivity(intent);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

@@ -60,7 +60,8 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST);
+                intent.putExtra("calling_activity", "BarcodesList");
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST.toString());
 
                 startActivity(intent);
             });
@@ -139,15 +140,6 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
 
         return true;
-    }
-
-    public void editMaterial(Barcode barcode) {
-        Intent add_barcode = new Intent(this, AddBarcodeActivity.class);
-        add_barcode.putExtra("mode", AddBarcodeActivity.EDIT_MODE);
-        add_barcode.putExtra("barcode", barcode);
-
-        // TODO: do we need to persist the open dialog that launched this?
-        startActivity(add_barcode);
     }
 
     public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.BarcodeViewHolder> {
@@ -246,7 +238,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
     }
 
-    public class BarcodeDisplayFragment extends DialogFragment {
+    public static class BarcodeDisplayFragment extends DialogFragment {
 
         @NonNull
         @Override
@@ -266,11 +258,34 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
                     "Heat #:" + barcode.material.heat_number + "\n" +
                     "PO #:" + barcode.material.po_number
                 )
-                .setPositiveButton("Edit", (dialog, id) -> BarcodesListActivity.this.editMaterial(barcode))
-                .setNegativeButton("Delete", (dialog, id) -> BarcodeDatabase.delete(barcode))
+                .setPositiveButton("Edit", (dialog, id) -> edit(barcode))
+                .setNegativeButton("Delete", (dialog, id) -> delete(barcode))
                 .setNeutralButton("Return", (dialog, id) -> {});
 
             return builder.create();
+        }
+
+        private void edit(Barcode barcode) {
+            Intent add_barcode = new Intent(getContext(), AddBarcodeActivity.class);
+            add_barcode.putExtra("mode", AddBarcodeActivity.EDIT_MODE);
+            add_barcode.putExtra("barcode", barcode);
+
+            // TODO: do we need to persist the open dialog that launched this?
+            startActivity(add_barcode);
+        }
+
+        private void delete(Barcode barcode) {
+            new AlertDialog.Builder(getContext())
+                .setTitle("Confirm delete")
+                .setMessage("Are you sure you want to delete barcode " + barcode.id_hash)
+                .setPositiveButton("Yes", (d, i) -> {
+                    BarcodeDatabase.delete(barcode);
+
+                    // TODO: make toast of delete confirmation (having trouble with this because of the context)
+//                    Toast.makeText(getActivity(), barcode.id_hash + " deleted.", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("No", (d, i) -> {})
+                .show();
         }
     }
 

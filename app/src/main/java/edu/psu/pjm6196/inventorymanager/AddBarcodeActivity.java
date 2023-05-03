@@ -104,7 +104,8 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     private void scanBarcodeButtonClicked(View view) {
         Intent intent = new Intent(this, ScanActivity.class);
-        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL);
+        intent.putExtra("calling_activity", "AddBarcode");
+        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
 
         startActivity(intent);
     }
