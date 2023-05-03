@@ -290,9 +290,9 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
               long endMs = SystemClock.elapsedRealtime();
               long currentFrameLatencyMs = endMs - frameStartMs;
               long currentDetectorLatencyMs = endMs - detectorStartMs;
-              if (numRuns >= 500) {
+              if (numRuns >= 500)
                 resetLatencyStats();
-              }
+
               numRuns++;
               frameProcessedInOneSecondInterval++;
               totalFrameMs += currentFrameLatencyMs;
@@ -329,12 +329,17 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
                 temperatureMonitor.logTemperature();
               }
 
-              graphicOverlay.clear();
+              if ( requiresReDraw() )
+                graphicOverlay.clear();
 
     // some of this code was adapted from the blog post: https://medium.com/swlh/introduction-to-androids-camerax-with-java-ca384c522c5
               if (originalCameraImage != null) {
-                graphicOverlay.add("IMAGE_GRAPHIC", new CameraImageGraphic(graphicOverlay, originalCameraImage));
+                graphicOverlay.add(
+                    "IMAGE_GRAPHIC",
+                    new CameraImageGraphic(graphicOverlay, originalCameraImage)
+                );
               }
+
               VisionProcessorBase.this.onSuccess(results, graphicOverlay);
               if (PreferenceUtils.showDetectionInfo(graphicOverlay.getContext())) {
                 graphicOverlay.add(
@@ -363,6 +368,8 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
               VisionProcessorBase.this.onFailure(e);
             });
   }
+
+  protected boolean requiresReDraw() { return true; }
 
   @Override
   public void stop() {

@@ -30,7 +30,7 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 
 /** Graphic instance for rendering Barcode position and content information in an overlay view. */
 public class BarcodeGraphic extends Graphic {
-  private static final long LIFETIME_DURATION = 1000;
+  public static long LIFETIME_DURATION = 1000;
 
   private static int UNSELECTED_COLOR = BarcodeGraphic.MARKER_COLOR;
   private static int SELECTED_COLOR = Color.GREEN;
@@ -72,11 +72,18 @@ public class BarcodeGraphic extends Graphic {
   public void toggleSelected() {
     isSelected = !isSelected;
   }
+  public void clearSelected() {
+    isSelected = false;
+  }
   public boolean isTouchInRect(float x, float y) {
-    return calculateRect().contains(x, y);
+    // get barcode rectangle
+    RectF rect = calculateRect();
+    RectF labelRect = getTextBackgroundRect(rect);
+
+    return rect.contains(x, y) || labelRect.contains(x, y);
   }
 
-  public boolean needsRemoved() {
+  public boolean isActive() {
     return System.currentTimeMillis() - this.lastScannedTime > LIFETIME_DURATION;
   }
 
@@ -135,6 +142,22 @@ public class BarcodeGraphic extends Graphic {
     return rect;
   }
 
+  private RectF getTextBackgroundRect(RectF rect) {
+    float lineHeight = TEXT_SIZE + (2 * STROKE_WIDTH);
+    float textWidth = getBarcodePaint().measureText(barcode.getDisplayValue());
+
+    return new RectF(
+        rect.left - STROKE_WIDTH,
+        rect.top - lineHeight,
+        rect.left + textWidth + (2 * STROKE_WIDTH),
+        rect.top
+    );
+  }
+
+  private RectF getTextBackgroundRect() {
+    return getTextBackgroundRect(calculateRect());
+  }
+
   /**
    * Draws the barcode block annotations for position, size, and raw value on the supplied canvas.
    */
@@ -147,18 +170,14 @@ public class BarcodeGraphic extends Graphic {
     // calculate barcode rectangle
     RectF rect = calculateRect();
 
+    // draw rectangle
+    canvas.drawRect(rect, getRectPaint());
+
     // Draws other object info.
-    Paint barcodePaint = getBarcodePaint();
-    float lineHeight = TEXT_SIZE + (2 * STROKE_WIDTH);
-    float textWidth = barcodePaint.measureText(barcode.getDisplayValue());
-    canvas.drawRect(
-        rect.left - STROKE_WIDTH,
-        rect.top - lineHeight,
-        rect.left + textWidth + (2 * STROKE_WIDTH),
-        rect.top,
-        getLabelPaint());
+    canvas.drawRect( getTextBackgroundRect(rect), getLabelPaint() );
+
     // Renders the barcode at the bottom of the box.
-    canvas.drawText(barcode.getDisplayValue(), rect.left, rect.top - STROKE_WIDTH, barcodePaint);
+    canvas.drawText(barcode.getDisplayValue(), rect.left, rect.top - STROKE_WIDTH, getBarcodePaint());
 
     // save last draw size/location
     lastDrawRect = rect;

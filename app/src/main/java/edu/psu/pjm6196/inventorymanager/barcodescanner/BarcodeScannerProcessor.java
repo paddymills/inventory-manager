@@ -34,10 +34,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.BarcodeGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
 
 /** Barcode Detector Demo. */
 public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> {
@@ -48,6 +49,10 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   private final BarcodeScanner barcodeScanner;
 
   private final ConcurrentHashMap<String, BarcodeGraphic> barcodes;
+
+  public static void set_barcode_lifetime(long lifetime) {
+    BarcodeGraphic.LIFETIME_DURATION = lifetime;
+  }
 
   public BarcodeScannerProcessor(Context context) {
     super(context);
@@ -77,14 +82,20 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     return touchedBarcodes;
   }
 
-  public void commitBarcodeTouchEvents(ArrayList<String> touchedBarcodes) {
+  public void clearSelected() {
+    for ( BarcodeGraphic barcode : barcodes.values() ) {
+      barcode.clearSelected();
+    }
+  }
+
+  public void commitBarcodeTouchEvents(List<String> touchedBarcodes) {
     for ( String key : touchedBarcodes ) {
       if ( barcodes.containsKey(key) )
         barcodes.get(key).toggleSelected();
     }
   }
 
-  public int getToBeNumberOfBarcodesSelected(ArrayList<String> touchedBarcodes) {
+  public int getToBeNumberOfBarcodesSelected(List<String> touchedBarcodes) {
     int selected = getNumberOfBarcodesSelected();
 
     for ( String key : touchedBarcodes ) {
@@ -102,14 +113,12 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     return (int) getSelectedBarcodes().count();
   }
 
-  public String[] getSelectedBarcodeIds() {
-    return (String[]) getSelectedBarcodes().map(BarcodeGraphic::toString).toArray();
+  public List<String> getSelectedBarcodeIds() {
+    return getSelectedBarcodes().map(BarcodeGraphic::toString).collect(Collectors.toList());
   }
 
   public String getSelectedBarcodeId() {
-    assert getNumberOfBarcodesSelected() == 1;
-
-    return getSelectedBarcodeIds()[0];
+    return getSelectedBarcodeIds().get(0);
   }
 
   @Override
@@ -151,11 +160,20 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     }
   }
 
+  @Override
+  protected boolean requiresReDraw() {
+    for( BarcodeGraphic barcode : barcodes.values() ) {
+      if ( barcode.isActive() && barcode.needsReDrawn() )
+        return true;
+    }
+
+    return false;
+  }
+
   private void validateBarcodesDisplayed(@NonNull GraphicOverlay graphicOverlay) {
     for ( Map.Entry<String, BarcodeGraphic> barcode : this.barcodes.entrySet() ) {
-      if ( barcode.getValue().needsRemoved() ) {
+      if ( !barcode.getValue().isActive() ) {
         graphicOverlay.remove(barcode.getKey());
-        this.barcodes.remove(barcode.getKey());
       }
     }
   }
