@@ -24,53 +24,106 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
+import androidx.annotation.NonNull;
+
 import com.google.mlkit.vision.barcode.common.Barcode;
 
 /** Graphic instance for rendering Barcode position and content information in an overlay view. */
 public class BarcodeGraphic extends Graphic {
+  private static final long LIFETIME_DURATION = 1000;
+
+  private static int UNSELECTED_COLOR = BarcodeGraphic.MARKER_COLOR;
+  private static int SELECTED_COLOR = Color.GREEN;
 
   protected static final int TEXT_COLOR = Color.BLACK;
   protected static final int MARKER_COLOR = Color.WHITE;
   protected static final float TEXT_SIZE = 54.0f;
   protected static final float STROKE_WIDTH = 4.0f;
 
-  protected Paint rectPaint;
-  protected Paint barcodePaint;
-  protected Paint labelPaint;
-  protected Barcode barcode;
 
-  protected BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
+  protected Barcode barcode;
+  private final long lastScannedTime;
+  private boolean isSelected;
+  private RectF lastDrawRect;
+
+  public BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
     super(overlay);
 
     this.barcode = barcode;
-    setGraphicPaints();
+    this.lastScannedTime = System.currentTimeMillis();
   }
+
+  @NonNull
+  @Override
+  public String toString() {
+    if ( this.barcode != null )
+      return this.barcode.getDisplayValue();
+
+    return "";
+  }
+
+  public void setBarcode(Barcode barcode) {
+    this.barcode = barcode;
+  }
+
+  public boolean isSelected() {
+    return isSelected;
+  }
+  public void toggleSelected() {
+    isSelected = !isSelected;
+  }
+  public boolean isTouchInRect(float x, float y) {
+    return calculateRect().contains(x, y);
+  }
+
+  public boolean needsRemoved() {
+    return System.currentTimeMillis() - this.lastScannedTime > LIFETIME_DURATION;
+  }
+
 
   /**
-   * Draws the barcode block annotations for position, size, and raw value on the supplied canvas.
+   * @return if the last drawn RectF differs from the current calculated RectF
    */
-  protected void setGraphicPaints() {
-    rectPaint = new Paint();
-    rectPaint.setColor(MARKER_COLOR);
-    rectPaint.setStyle(Paint.Style.STROKE);
-    rectPaint.setStrokeWidth(STROKE_WIDTH);
-
-    barcodePaint = new Paint();
-    barcodePaint.setColor(TEXT_COLOR);
-    barcodePaint.setTextSize(TEXT_SIZE);
-
-    labelPaint = new Paint();
-    labelPaint.setColor(MARKER_COLOR);
-    labelPaint.setStyle(Paint.Style.FILL);
+  public boolean needsReDrawn() {
+    return calculateRect().equals(lastDrawRect);
   }
-  @Override
-  public void draw(Canvas canvas) {
-    if (barcode == null) {
-      throw new IllegalStateException("Attempting to draw a null barcode.");
-    }
 
-    // Draws the bounding box around the BarcodeBlock.
+  protected int getColor() {
+    return isSelected ? SELECTED_COLOR : UNSELECTED_COLOR;
+  }
+
+  protected Paint getRectPaint() {
+    Paint paint = new Paint();
+
+    paint.setColor(getColor());
+    paint.setStyle(Paint.Style.STROKE);
+    paint.setStrokeWidth(BarcodeGraphic.STROKE_WIDTH);
+
+    return paint;
+  }
+
+  protected Paint getBarcodePaint() {
+    Paint paint = new Paint();
+
+    paint.setColor(BarcodeGraphic.TEXT_COLOR);
+    paint.setTextSize(TEXT_SIZE);
+
+    return paint;
+  }
+
+  protected Paint getLabelPaint() {
+    Paint paint = new Paint();
+
+    paint.setColor(getColor());
+    paint.setStyle(Paint.Style.FILL);
+
+    return paint;
+  }
+
+  private RectF calculateRect() {
+    // calculate bounding box around the BarcodeBlock.
     RectF rect = new RectF(barcode.getBoundingBox());
+
     // If the image is flipped, the left will be translated to right, and the right to left.
     float x0 = translateX(rect.left);
     float x1 = translateX(rect.right);
@@ -78,9 +131,24 @@ public class BarcodeGraphic extends Graphic {
     rect.right = max(x0, x1);
     rect.top = translateY(rect.top);
     rect.bottom = translateY(rect.bottom);
-    canvas.drawRect(rect, rectPaint);
+
+    return rect;
+  }
+
+  /**
+   * Draws the barcode block annotations for position, size, and raw value on the supplied canvas.
+   */
+  @Override
+  public void draw(Canvas canvas) {
+    if (barcode == null) {
+      throw new IllegalStateException("Attempting to draw a null barcode.");
+    }
+
+    // calculate barcode rectangle
+    RectF rect = calculateRect();
 
     // Draws other object info.
+    Paint barcodePaint = getBarcodePaint();
     float lineHeight = TEXT_SIZE + (2 * STROKE_WIDTH);
     float textWidth = barcodePaint.measureText(barcode.getDisplayValue());
     canvas.drawRect(
@@ -88,8 +156,11 @@ public class BarcodeGraphic extends Graphic {
         rect.top - lineHeight,
         rect.left + textWidth + (2 * STROKE_WIDTH),
         rect.top,
-        labelPaint);
+        getLabelPaint());
     // Renders the barcode at the bottom of the box.
     canvas.drawText(barcode.getDisplayValue(), rect.left, rect.top - STROKE_WIDTH, barcodePaint);
+
+    // save last draw size/location
+    lastDrawRect = rect;
   }
 }

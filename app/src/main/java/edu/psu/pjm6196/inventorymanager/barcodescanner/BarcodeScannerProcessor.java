@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.ScannedBarcode;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.BarcodeGraphic;
 
 /** Barcode Detector Demo. */
 public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> {
@@ -47,7 +47,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
 
   private final BarcodeScanner barcodeScanner;
 
-  private final ConcurrentHashMap<String, ScannedBarcode> barcodes;
+  private final ConcurrentHashMap<String, BarcodeGraphic> barcodes;
 
   public BarcodeScannerProcessor(Context context) {
     super(context);
@@ -66,7 +66,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
 
     float x = touch.getX();
     float y = touch.getY();
-    for (Map.Entry<String, ScannedBarcode> entry : barcodes.entrySet()) {
+    for (Map.Entry<String, BarcodeGraphic> entry : barcodes.entrySet()) {
       if ( entry.getValue().isTouchInRect(x, y) ) {
         Log.d(TAG, String.format("Barcode %s selected", entry.getKey()));
 
@@ -95,15 +95,15 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     return selected;
   }
 
-  private Stream<ScannedBarcode> getSelectedBarcodes() {
-    return barcodes.values().stream().filter(ScannedBarcode::isSelected);
+  private Stream<BarcodeGraphic> getSelectedBarcodes() {
+    return barcodes.values().stream().filter(BarcodeGraphic::isSelected);
   }
   public int getNumberOfBarcodesSelected() {
     return (int) getSelectedBarcodes().count();
   }
 
   public String[] getSelectedBarcodeIds() {
-    return (String[]) getSelectedBarcodes().map(ScannedBarcode::toString).toArray();
+    return (String[]) getSelectedBarcodes().map(BarcodeGraphic::toString).toArray();
   }
 
   public String getSelectedBarcodeId() {
@@ -134,10 +134,10 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
       Barcode barcode = detectedBarcodes.get(i);
 
       String key = barcode.getRawValue();
-      ScannedBarcode sb = new ScannedBarcode(graphicOverlay, barcode);
+      BarcodeGraphic sb = new BarcodeGraphic(graphicOverlay, barcode);
 
       assert key != null;
-      ScannedBarcode currentVal = this.barcodes.putIfAbsent(key, sb);
+      BarcodeGraphic currentVal = this.barcodes.putIfAbsent(key, sb);
       if ( currentVal != null ) {
         // barcode exists -> retain existing attributes
         currentVal.setBarcode(barcode);
@@ -152,7 +152,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   }
 
   private void validateBarcodesDisplayed(@NonNull GraphicOverlay graphicOverlay) {
-    for ( Map.Entry<String, ScannedBarcode> barcode : this.barcodes.entrySet() ) {
+    for ( Map.Entry<String, BarcodeGraphic> barcode : this.barcodes.entrySet() ) {
       if ( barcode.getValue().needsRemoved() ) {
         graphicOverlay.remove(barcode.getKey());
         this.barcodes.remove(barcode.getKey());
