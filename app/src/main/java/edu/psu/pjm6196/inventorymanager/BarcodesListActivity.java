@@ -1,13 +1,5 @@
 package edu.psu.pjm6196.inventorymanager;
 
-import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -25,7 +17,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.Serializable;
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
@@ -110,7 +109,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     public void displayMaterial(int id) {
         BarcodeDatabase.getBarcode(id, barcode -> {
             Bundle args = new Bundle();
-            args.putSerializable("barcode", (Serializable) barcode);
+            args.putParcelable("barcode", barcode);
 
             BarcodeDisplayFragment barcodeDisplay = new BarcodeDisplayFragment();
             barcodeDisplay.setArguments(args);
@@ -144,13 +143,10 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
     public void editMaterial(Barcode barcode) {
         Intent add_barcode = new Intent(this, AddBarcodeActivity.class);
-        add_barcode.putExtra("barcode", (Serializable) barcode);
+        add_barcode.putExtra("mode", AddBarcodeActivity.EDIT_MODE);
+        add_barcode.putExtra("barcode", barcode);
 
         startActivity(add_barcode);
-    }
-
-    public void deleteMaterial(Barcode barcode) {
-        BarcodeDatabase.getDatabase(this).barcodeDAO().delete(barcode);
     }
 
     public class BarcodeListAdapter extends RecyclerView.Adapter<BarcodeListAdapter.BarcodeViewHolder> {
@@ -257,7 +253,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
             assert getArguments() != null;
-            Barcode barcode = (Barcode) getArguments().getSerializable("barcode");
+            Barcode barcode = getArguments().getParcelable("barcode");
 
             builder
                 .setTitle("Material Info")
@@ -270,10 +266,12 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
                     "PO #:" + barcode.material.po_number
                 )
                 .setPositiveButton("Edit", (dialog, id) -> BarcodesListActivity.this.editMaterial(barcode))
-                .setNegativeButton("Delete", (dialog, id) -> BarcodesListActivity.this.deleteMaterial(barcode))
+                .setNegativeButton("Delete", (dialog, id) -> BarcodeDatabase.delete(barcode))
                 .setNeutralButton("Return", (dialog, id) -> {});
 
             return builder.create();
         }
     }
+
+    // TODO: filter fragment (need fields for material master, location, and heat number)
 }
