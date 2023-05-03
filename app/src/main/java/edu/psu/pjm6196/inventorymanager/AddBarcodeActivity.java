@@ -1,5 +1,6 @@
 package edu.psu.pjm6196.inventorymanager;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,8 +11,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import java.io.Serializable;
-
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.Material;
@@ -20,7 +19,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     private static final String TAG = "AddBarcode";
     public static final int ADD_MODE = 0;
-    public static final int EDIT_MOD = 1;
+    public static final int EDIT_MODE = 1;
     private int mode;
 
     @Override
@@ -35,14 +34,10 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_change_loc).setVisibility(View.GONE);
 
         findViewById(R.id.btn_set_barcode)
-            .setOnClickListener(v -> {
-                Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.AddMaterial);
+            .setOnClickListener(this::scanBarcodeButtonClicked);
 
-                startActivity(intent);
-            });
-
-        findViewById(R.id.btn_submit).setOnClickListener(this::submitButtonClicked);
+        findViewById(R.id.btn_submit)
+            .setOnClickListener(this::submitButtonClicked);
     }
 
     @Override
@@ -55,7 +50,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     @Override
     protected void onBackButtonClicked() {
-        startActivity(new Intent(this, BarcodesListActivity.class));
+        startActivity(new Intent(this, getCallingActivity().getClass()));
     }
 
     @Override
@@ -63,8 +58,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         super.onSaveInstanceState(instanceState);
         instanceState.putInt("mode", mode);
 
-        // TODO: impl Parcelable
-        instanceState.putSerializable("barcode", (Serializable) getFormValuesUnchecked());
+        instanceState.putParcelable("barcode", getFormValuesUnchecked());
 
     }
 
@@ -74,7 +68,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
         this.mode = instanceState.getInt("mode", ADD_MODE);
 
-        // TODO: get persisted form values
+        setFormValues( instanceState.getParcelable("barcode") );
     }
 
     private void handleIntent(Intent intent) {
@@ -87,14 +81,32 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
             String scanned_barcode = intent.getStringExtra("barcode");
             Log.d(TAG, "Got barcode from scanner: " + scanned_barcode);
 
-            // TODO: check if ID is already in database
+            if ( BarcodeDatabase
+                    .getDatabase(this)
+                    .barcodeDAO()
+                    .getByIdHash(scanned_barcode) != null ) {
+                new AlertDialog.Builder(this)
+                    .setMessage("Barcode id `" + scanned_barcode + "` already exists in the database")
+                    .setPositiveButton("Scan a different barcode", (dialog, id) -> scanBarcodeButtonClicked(null))
+                    .setNegativeButton("Cancel and exit Add/Edit mode", (dialog, id) -> onBackButtonClicked())
+                    .create()
+                    .show();
+            }
+
             ((TextView) findViewById(R.id.barcode_id)).setText(scanned_barcode);
         }
 
-        if ( mode == EDIT_MOD ) {
+        if ( mode == EDIT_MODE) {
             Barcode barcode = (Barcode) intent.getSerializableExtra("barcode");
             setFormValues(barcode);
         }
+    }
+
+    private void scanBarcodeButtonClicked(View view) {
+        Intent intent = new Intent(this, ScanActivity.class);
+        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.AddMaterial);
+
+        startActivity(intent);
     }
 
     private void submitButtonClicked(View view) {
