@@ -49,8 +49,9 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     @Override
-    protected void onBackButtonClicked(View view) {
-        startActivity(new Intent(this, getCallingActivity().getClass()));
+    protected Class<?> getBackButtonClass() {
+        // TODO: allow this to fired from MainActivity
+        return BarcodesListActivity.class;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         super.onSaveInstanceState(instanceState);
         instanceState.putInt("mode", mode);
 
-        instanceState.putParcelable("barcode", getFormValuesUnchecked());
+        instanceState.putParcelable("barcode", getFormValuesUnchecked(false));
 
     }
 
@@ -97,7 +98,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         }
 
         if ( mode == EDIT_MODE) {
-            Barcode barcode = (Barcode) intent.getSerializableExtra("barcode");
+            Barcode barcode = (Barcode) intent.getParcelableExtra("barcode");
             setFormValues(barcode);
         }
     }
@@ -111,16 +112,33 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     private void submitButtonClicked(View view) {
-        Barcode barcode = getFormValues();
+        Barcode barcode = getFormValuesChecked();
         if ( barcode != null ) {
             // TODO: validate barcode does not exist if in database
-            BarcodeDatabase.getDatabase(this).barcodeDAO().insert(barcode);
 
-            Toast.makeText(this, "Barcode added", Toast.LENGTH_SHORT).show();
+
+            if ( mode == ADD_MODE ) {
+                BarcodeDatabase.insert(barcode);
+                Toast.makeText(this, "Barcode added", Toast.LENGTH_SHORT).show();
+            }
+            else {    // edit mode
+                BarcodeDatabase.getBarcodeByIdHash(
+                    barcode.id_hash,
+                    b -> {
+                        barcode.id = b.id;
+
+                        BarcodeDatabase.update(barcode);
+                        Toast.makeText(this, "Barcode updated", Toast.LENGTH_SHORT).show();
+                    }
+                );
+
+            }
 
             // clear form
-            setFormValues(null);
+//            setFormValues(null);
+            onBackButtonClicked(view);
         }
+
     }
 
     private void setFormValues(Barcode barcode) {
@@ -141,7 +159,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     private Barcode getFormValues() {
-        Barcode barcode = getFormValuesUnchecked();
+        Barcode barcode = getFormValuesUnchecked(false);
         if (
             barcode.id_hash.equals("") ||
             barcode.material.material_master.equals("") ||
@@ -155,14 +173,29 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         return barcode;
     }
 
-    private Barcode getFormValuesUnchecked() {
+    private Barcode getFormValuesChecked() {
+        Barcode barcode = getFormValuesUnchecked(true);
+        if (
+            barcode.id_hash.equals("") ||
+                barcode.material.material_master.equals("") ||
+                barcode.material.grade.equals("") ||
+                barcode.material.location.equals("") ||
+                barcode.material.heat_number.equals("") ||
+                barcode.material.po_number.equals("")
+        )
+            return null;
+
+        return barcode;
+    }
+
+    private Barcode getFormValuesUnchecked(boolean alert) {
         // get values
-        String id    = validateTextView(R.id.barcode_id, "Barcode ID");
-        String mm    = validateTextView(R.id.txt_mm,"Material Master");
-        String grade = validateTextView(R.id.txt_grade, "Material Grade");
-        String loc   = validateTextView(R.id.txt_loc, "Location");
-        String heat  = validateTextView(R.id.txt_heat, "Heat Number");
-        String po    = validateTextView(R.id.txt_po, "PO Number");
+        String id    = validateTextView(R.id.barcode_id, "Barcode ID", alert);
+        String mm    = validateTextView(R.id.txt_mm,"Material Master", alert);
+        String grade = validateTextView(R.id.txt_grade, "Material Grade", alert);
+        String loc   = validateTextView(R.id.txt_loc, "Location", alert);
+        String heat  = validateTextView(R.id.txt_heat, "Heat Number", alert);
+        String po    = validateTextView(R.id.txt_po, "PO Number", alert);
 
         return new Barcode(0, id, new Material(mm, loc, grade, heat, po));
     }
@@ -170,17 +203,20 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     /**
      * @param id resource ID of the TextView
      * @param title TextView title for toasting
+     * @param alertOnError toast if there is a validation error
      * @return Value of TextView if valid, otherwise null
      */
-    private String validateTextView(int id, String title) {
+    private String validateTextView(int id, String title, boolean alertOnError) {
         // validates that the text view is not empty
         // returns null if empty, otherwise
 
         String val = ((TextView) findViewById(id)).getText().toString();
 
         if ( val.isEmpty() ) {
-            Toast.makeText(this, title + " cannot be empty", Toast.LENGTH_SHORT).show();
-            findViewById(id).requestFocus();
+            if ( alertOnError ) {
+                Toast.makeText(this, title + " cannot be empty", Toast.LENGTH_SHORT).show();
+                findViewById(id).requestFocus();
+            }
 
             return null;
         }

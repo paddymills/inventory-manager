@@ -51,6 +51,9 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
 
         Intent callingIntent = getIntent();
+        if ( callingIntent.hasExtra("back_button_clicked") )
+            adapter.notifyDataSetChanged();
+
         if ( callingIntent.hasExtra("barcode") ) {
             String scanned_barcode = callingIntent.getStringExtra("barcode");
             Log.d(TAG, "Got barcode from scanner: " + scanned_barcode);
@@ -73,9 +76,9 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         inflater.inflate(R.menu.query_menu, menu);
 
         if (filtered)
-            menu.getItem(0).setIcon(R.drawable.ic_nofilter);
+            menu.findItem(R.id.menu_filter).setIcon(R.drawable.ic_nofilter);
         else
-            menu.getItem(0).setIcon(R.drawable.ic_filter);
+            menu.findItem(R.id.menu_filter).setIcon(R.drawable.ic_filter);
 
         return true;
     }
@@ -89,7 +92,19 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             return filterMaterial();
         }
 
+        if (item.getItemId() == R.id.menu_add) {
+            Intent intent = new Intent(this, AddBarcodeActivity.class);
+            intent.putExtra("calling_activity", "BarcodesList");
+            intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
+
+            startActivity(intent);
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+    @Override
+    protected Class<?> getBackButtonClass() {
+        return MainActivity.class;
     }
 
     @Override
@@ -268,6 +283,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         private void edit(Barcode barcode) {
             Intent add_barcode = new Intent(getContext(), AddBarcodeActivity.class);
             add_barcode.putExtra("mode", AddBarcodeActivity.EDIT_MODE);
+            add_barcode.putExtra("calling_activity", "BarcodesList");
             add_barcode.putExtra("barcode", barcode);
 
             // TODO: do we need to persist the open dialog that launched this?
