@@ -27,6 +27,25 @@ public interface BarcodeDAO {
     @Query("SELECT * FROM barcodes WHERE id = :barcode_id")
     Barcode getById(int barcode_id);
 
-    @Query("SELECT * FROM barcodes WHERE material_master LIKE :search_term || '%'")
-    LiveData<List<Barcode>> getByMaterial(String search_term);
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%'")
+    LiveData<List<Barcode>> getByMaterial(String material);
+
+    @Query("SELECT * FROM barcodes WHERE location = :location")
+    LiveData<List<Barcode>> getByLocation(String location);
+
+    @Query("SELECT * FROM barcodes WHERE heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByHeatNumber(String heat);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%' AND location = :location")
+    LiveData<List<Barcode>> getByMaterialAndLocation(String material, String location);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%' AND heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByMaterialAndHeatNumber(String material, String heat);
+
+    @Query("SELECT * FROM barcodes WHERE location = :location AND heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByLocationAndHeatNumber(String location, String heat);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%' AND location = :location AND heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByMaterialAndLocationAndHeatNUmber(String material, String location, String heat);
+
 }
