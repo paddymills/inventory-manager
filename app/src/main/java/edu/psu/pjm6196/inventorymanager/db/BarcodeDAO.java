@@ -27,6 +27,9 @@ public interface BarcodeDAO {
     @Query("SELECT * FROM barcodes WHERE id = :barcode_id")
     Barcode getById(int barcode_id);
 
+    @Query("SELECT * FROM barcodes WHERE hash = :id_hash")
+    Barcode getByIdHash(String id_hash);
+
     @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%'")
     LiveData<List<Barcode>> getByMaterial(String material);
 
