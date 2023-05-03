@@ -49,7 +49,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     @Override
-    protected void onBackButtonClicked() {
+    protected void onBackButtonClicked(View view) {
         startActivity(new Intent(this, getCallingActivity().getClass()));
     }
 
@@ -88,7 +88,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
                 new AlertDialog.Builder(this)
                     .setMessage("Barcode id `" + scanned_barcode + "` already exists in the database")
                     .setPositiveButton("Scan a different barcode", (dialog, id) -> scanBarcodeButtonClicked(null))
-                    .setNegativeButton("Cancel and exit Add/Edit mode", (dialog, id) -> onBackButtonClicked())
+                    .setNegativeButton("Cancel and exit Add/Edit mode", (dialog, id) -> onBackButtonClicked(null))
                     .create()
                     .show();
             }
@@ -104,7 +104,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     private void scanBarcodeButtonClicked(View view) {
         Intent intent = new Intent(this, ScanActivity.class);
-        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.AddMaterial);
+        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL);
 
         startActivity(intent);
     }

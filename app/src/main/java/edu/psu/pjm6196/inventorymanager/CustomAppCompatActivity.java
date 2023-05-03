@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -25,7 +26,7 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
         toolbar.setTitle(getToolbarTitleResId());
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(view -> this.onBackButtonClicked());
+        toolbar.setNavigationOnClickListener(this::onBackButtonClicked);
     }
 
     @Override
@@ -50,14 +51,18 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
         return R.string.app_name;
     }
 
-    protected void onBackButtonClicked() {
-        Intent intent = new Intent(this, getCallingActivity().getClass());
+    protected void onBackButtonClicked(View view) {
+        Intent intent = new Intent(this, getBackButtonClass());
         setReturnToActivityArgs(intent);
         startActivity(intent);
     }
 
+    protected Class<?> getBackButtonClass() {
+        return getCallingActivity().getClass();
+    }
+
     protected void setReturnToActivityArgs(Intent intent) {
-        // for passing data back to calling intent
-//        intent.putExtra("value_name", 0);
+//         for passing data back to calling intent
+        intent.putExtra("back_button_clicked", true);
     }
 }
