@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.ScannedBarcode;
 
 /** Barcode Detector Demo. */
 public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> {

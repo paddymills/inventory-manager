@@ -1,4 +1,4 @@
-package edu.psu.pjm6196.inventorymanager.barcodescanner;
+package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -12,10 +12,7 @@ import androidx.annotation.NonNull;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.BarcodeGraphic;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
-
-class ScannedBarcode extends BarcodeGraphic {
+public class ScannedBarcode extends BarcodeGraphic {
     private static final long LIFETIME_DURATION = 1000;
 
     private static int UNSELECTED_COLOR = BarcodeGraphic.MARKER_COLOR;
