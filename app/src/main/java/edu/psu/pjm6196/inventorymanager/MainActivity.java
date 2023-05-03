@@ -22,7 +22,7 @@ public class MainActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_move)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MoveMaterial);
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MOVE_MATERIAL);
 
                 startActivity(intent);
             });
@@ -30,7 +30,7 @@ public class MainActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FindMaterial);
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FIND_MATERIAL);
 
                 startActivity(intent);
             });

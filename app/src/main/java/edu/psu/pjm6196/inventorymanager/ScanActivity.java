@@ -59,23 +59,45 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     // for knowing what the calling activity wants to do with the scanned data barcode(s)
     public enum CallingActivityIntent {
         // single barcode
-        AddMaterial,
-        FindMaterial,
-        MoveMaterial,
+        ADD_MATERIAL("add"),
+        FIND_MATERIAL("find"),
+        MOVE_MATERIAL("move"),
 
         // multiple barcodes
-        FilterList,
-        TakeInventory;
+        FILTER_LIST("filter");
+//        TAKE_INVENTORY("take_inventory");
+
+
+        private final String name;
+        CallingActivityIntent(String name) {
+            this.name = name;
+        }
+
+        // enum constructor from: https://stackoverflow.com/a/2965252
+        public static CallingActivityIntent fromString(String name) {
+            for (CallingActivityIntent c : CallingActivityIntent.values() ) {
+                if ( c.name.equalsIgnoreCase(name) )
+                    return c;
+            }
+
+            return null;
+        }
 
         public boolean isSingleBarcodeScanUseCase() {
-            switch ( this ) {
-                case AddMaterial:
-                case FindMaterial:
-                case MoveMaterial:
+            switch (this) {
+                case ADD_MATERIAL:
+                case FIND_MATERIAL:
+                case MOVE_MATERIAL:
                     return true;
             }
 
             return false;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return this.name;
         }
     }
 
@@ -87,7 +109,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         Log.i(TAG, "onCreate");
 
         Intent callingIntent = getIntent();
-        scan_use_case  = (CallingActivityIntent) callingIntent.getSerializableExtra("calling_activity_intent");
+        scan_use_case = CallingActivityIntent.fromString(callingIntent.getStringExtra("calling_activity_intent"));
 
         // request camera permissions
         ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
@@ -103,6 +125,11 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
         return true;
     }
+
+//    @Override
+//    protected Class<?> getBackButtonClass() {
+//        return MainActivity.class;
+//    }
 
     @Override
     protected int getToolbarTitleResId() {
@@ -161,33 +188,37 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         });
     }
 
+//    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         // to handle touch event on GraphicOverlay
         if ( motionEvent.getAction() == MotionEvent.ACTION_DOWN ) {
 
-            float x = motionEvent.getX();
-            float y = motionEvent.getY();
-            if ( barcodeProcessor.handleTouchEvent((int) x, (int) y) ) {
+            if ( this.scan_use_case.isSingleBarcodeScanUseCase() && barcodeProcessor.getNumberOfBarcodesSelected() > 1 ) {
+                Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
+
+                view.performClick();
+                return true;
+            }
+
+            if ( barcodeProcessor.handleTouchEvent(motionEvent.getX(), motionEvent.getY()) ) {
                 // touch occurred in at least 1 barcode
-                long numSelected = barcodeProcessor.getNumberOfBarcodesSelected();
-                if ( numSelected == 0 ) {
+                if ( barcodeProcessor.getNumberOfBarcodesSelected() == 0 ) {
                     Log.d(TAG, "No barcodes selected");
                     toolbar.getItem(0).setVisible(false);
-                } else if ( numSelected > 1 && this.scan_use_case.isSingleBarcodeScanUseCase() ) {
-                    Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
-                    toolbar.getItem(0).setVisible(false);
-                } else {
+                } else  {
                     Log.d(TAG, "Barcodes selected");
                     toolbar.getItem(0)
                         .setEnabled(true)
                         .setOnMenuItemClickListener(item -> returnResult());
                 }
 
+                view.performClick();
                 return true;
             }
         }
 
+        view.performClick();
         return false;
     }
 

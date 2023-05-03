@@ -60,7 +60,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FilterList);
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST);
 
                 startActivity(intent);
             });
