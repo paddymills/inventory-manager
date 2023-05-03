@@ -1,4 +1,4 @@
-package edu.psu.pjm6196.inventorymanager.barcodescanner.utils;
+package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;

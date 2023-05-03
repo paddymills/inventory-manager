@@ -48,14 +48,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.BitmapUtils;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraImageGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.CameraImageGraphic;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.FrameMetadata;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.InferenceInfoGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.InferenceInfoGraphic;
 import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.ScopedExecutor;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.TemperatureMonitor;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.VisionImageProcessor;
 
 /**
  * Abstract base class for vision frame processors. Subclasses need to implement {@link

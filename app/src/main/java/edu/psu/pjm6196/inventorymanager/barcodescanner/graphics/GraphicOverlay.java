@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.psu.pjm6196.inventorymanager.barcodescanner.utils;
+package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -25,6 +25,8 @@ import android.view.View;
 import com.google.common.base.Preconditions;
 
 import java.util.HashMap;
+
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.Graphic;
 
 /**
  * A view which renders a series of custom graphics to be overlayed on top of an associated preview

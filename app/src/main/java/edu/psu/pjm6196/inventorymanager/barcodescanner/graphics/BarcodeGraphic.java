@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.psu.pjm6196.inventorymanager.barcodescanner;
+package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -25,8 +25,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.Graphic;
 
 /** Graphic instance for rendering Barcode position and content information in an overlay view. */
 public class BarcodeGraphic extends Graphic {
@@ -41,7 +39,7 @@ public class BarcodeGraphic extends Graphic {
   protected Paint labelPaint;
   protected Barcode barcode;
 
-  BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
+  protected BarcodeGraphic(GraphicOverlay overlay, Barcode barcode) {
     super(overlay);
 
     this.barcode = barcode;

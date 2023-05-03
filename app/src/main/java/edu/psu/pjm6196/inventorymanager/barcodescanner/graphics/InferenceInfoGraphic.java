@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.psu.pjm6196.inventorymanager.barcodescanner.utils;
+package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -29,7 +29,7 @@ public class InferenceInfoGraphic extends Graphic {
   private static final float TEXT_SIZE = 60.0f;
 
   private final Paint textPaint;
-  private final edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay overlay;
+  private final GraphicOverlay overlay;
   private final long frameLatency;
   private final long detectorLatency;
 
@@ -38,7 +38,7 @@ public class InferenceInfoGraphic extends Graphic {
   private boolean showLatencyInfo = true;
 
   public InferenceInfoGraphic(
-      edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay overlay,
+      GraphicOverlay overlay,
       long frameLatency,
       long detectorLatency,
       @Nullable Integer framesPerSecond) {

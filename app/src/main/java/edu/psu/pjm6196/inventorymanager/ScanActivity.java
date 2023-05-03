@@ -25,9 +25,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.ArrayList;
+
 import edu.psu.pjm6196.inventorymanager.barcodescanner.BarcodeScannerProcessor;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraXViewModel;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 public class ScanActivity extends CustomAppCompatActivity implements View.OnTouchListener {
@@ -194,20 +196,29 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         // to handle touch event on GraphicOverlay
         if ( motionEvent.getAction() == MotionEvent.ACTION_DOWN ) {
 
-            if ( this.scan_use_case.isSingleBarcodeScanUseCase() && barcodeProcessor.getNumberOfBarcodesSelected() > 1 ) {
-                Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
-
-                view.performClick();
-                return true;
-            }
-
-            if ( barcodeProcessor.handleTouchEvent(motionEvent.getX(), motionEvent.getY()) ) {
+            ArrayList<String> touchedBarcodes = barcodeProcessor.handleTouchEvent(motionEvent);
+            if ( touchedBarcodes.size() > 0 ) {
                 // touch occurred in at least 1 barcode
+                // probably will only ever happen in 1 barcode (until we impl swiping to select),
+                // but we should just handle multiples in case
+
+                if (
+                    this.scan_use_case.isSingleBarcodeScanUseCase() &&
+                    // use >= here just in case something bad happened and selected barcodes is > 1
+                    barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) >= 1
+                ) {
+                    Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
+
+                    view.performClick();
+                    return true;
+                }
+
+                barcodeProcessor.commitBarcodeTouchEvents(touchedBarcodes);
                 if ( barcodeProcessor.getNumberOfBarcodesSelected() == 0 ) {
-                    Log.d(TAG, "No barcodes selected");
+                    Log.d(TAG, "No barcodes selected anymore");
                     toolbar.getItem(0).setVisible(false);
                 } else  {
-                    Log.d(TAG, "Barcodes selected");
+                    Log.d(TAG, "Barcode(s) touched: " + touchedBarcodes.toString());
                     toolbar.getItem(0)
                         .setEnabled(true)
                         .setOnMenuItemClickListener(item -> returnResult());

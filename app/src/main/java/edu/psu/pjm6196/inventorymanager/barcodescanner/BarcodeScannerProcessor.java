@@ -19,6 +19,7 @@ package edu.psu.pjm6196.inventorymanager.barcodescanner;
 import android.content.Context;
 import android.graphics.Point;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 
@@ -29,12 +30,13 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
 
 /** Barcode Detector Demo. */
 public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> {
@@ -58,30 +60,49 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     );
   }
 
-  public boolean handleTouchEvent(float x, float y) {
-    boolean barcodeTouchOccurred = false;
+  public ArrayList<String> handleTouchEvent(MotionEvent touch) {
+    ArrayList<String> touchedBarcodes = new ArrayList<>();
 
-    for (ScannedBarcode barcode : barcodes.values()) {
-      if (barcode.isTouchInRect(x, y)) {
-        barcode.toggleSelected();
-        Log.d(TAG, "Barcode " + barcode.barcode.getRawValue() + " selected");
+    float x = touch.getX();
+    float y = touch.getY();
+    for (Map.Entry<String, ScannedBarcode> entry : barcodes.entrySet()) {
+      if ( entry.getValue().isTouchInRect(x, y) ) {
+        Log.d(TAG, String.format("Barcode %s selected", entry.getKey()));
 
-        barcodeTouchOccurred = true;
+        touchedBarcodes.add(entry.getKey());
       }
     }
 
-    return barcodeTouchOccurred;
+    return touchedBarcodes;
   }
 
-  private Stream<ScannedBarcode> selectedBarcodes() {
+  public void commitBarcodeTouchEvents(ArrayList<String> touchedBarcodes) {
+    for ( String key : touchedBarcodes ) {
+      if ( barcodes.containsKey(key) )
+        barcodes.get(key).toggleSelected();
+    }
+  }
+
+  public int getToBeNumberOfBarcodesSelected(ArrayList<String> touchedBarcodes) {
+    int selected = getNumberOfBarcodesSelected();
+
+    for ( String key : touchedBarcodes ) {
+      if ( barcodes.containsKey(key) && barcodes.get(key).isSelected() )
+        selected -= 1;
+    }
+
+    return selected;
+  }
+
+  private Stream<ScannedBarcode> getSelectedBarcodes() {
     return barcodes.values().stream().filter(ScannedBarcode::isSelected);
   }
-  public long getNumberOfBarcodesSelected() {
-    return selectedBarcodes().count();
+  public int getNumberOfBarcodesSelected() {
+    return (int) getSelectedBarcodes().count();
   }
 
   public String[] getSelectedBarcodeIds() {
-    return (String[]) selectedBarcodes().map(x -> x.barcode.getRawValue()).toArray();
+    return (String[]) getSelectedBarcodes().map(ScannedBarcode::toString).toArray();
   }
 
   public String getSelectedBarcodeId() {
@@ -114,6 +135,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
       String key = barcode.getRawValue();
       ScannedBarcode sb = new ScannedBarcode(graphicOverlay, barcode);
 
+      assert key != null;
       ScannedBarcode currentVal = this.barcodes.putIfAbsent(key, sb);
       if ( currentVal != null ) {
         // barcode exists -> retain existing attributes
@@ -149,7 +171,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
         Log.v(
             MANUAL_TESTING_LOG,
             String.format(
-                "Expected corner point size is 4, get %d", barcode.getCornerPoints().length));
+                "Expected corner point size is 4, got %d", barcode.getCornerPoints().length));
       }
       for (Point point : barcode.getCornerPoints()) {
         Log.v(

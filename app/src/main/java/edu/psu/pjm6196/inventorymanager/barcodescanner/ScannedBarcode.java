@@ -8,9 +8,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
+import androidx.annotation.NonNull;
+
 import com.google.mlkit.vision.barcode.common.Barcode;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.BarcodeGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
 
 class ScannedBarcode extends BarcodeGraphic {
     private static final long LIFETIME_DURATION = 1000;
@@ -31,6 +34,15 @@ class ScannedBarcode extends BarcodeGraphic {
     public void setBarcode(Barcode barcode) {
         this.barcode = barcode;
         calculateRect();
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        if ( this.barcode != null )
+            return this.barcode.getRawValue();
+
+        return "";
     }
 
     public boolean isSelected() {

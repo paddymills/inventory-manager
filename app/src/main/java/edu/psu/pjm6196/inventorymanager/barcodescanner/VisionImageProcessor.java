@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package edu.psu.pjm6196.inventorymanager.barcodescanner.utils;
+package edu.psu.pjm6196.inventorymanager.barcodescanner;
 
 import android.graphics.Bitmap;
 import androidx.camera.core.ImageProxy;
 import com.google.mlkit.common.MlKitException;
 
 import java.nio.ByteBuffer;
+
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.FrameMetadata;
 
 /** An interface to process the images with different vision detectors and custom image models. */
 public interface VisionImageProcessor {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.psu.pjm6196.inventorymanager.barcodescanner.utils;
+package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

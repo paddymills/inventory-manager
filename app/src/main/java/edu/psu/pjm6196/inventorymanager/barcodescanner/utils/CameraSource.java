@@ -40,6 +40,9 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 
+import edu.psu.pjm6196.inventorymanager.barcodescanner.VisionImageProcessor;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+
 /**
  * Manages the camera and allows UI updates on top of it (e.g. overlaying extra Graphics or
  * displaying extra information). This receives preview frames from the camera at a specified rate,
