@@ -17,7 +17,7 @@ public class BarcodeViewModel extends AndroidViewModel {
 
     public void filterBarcodes(boolean filtered) {
         if ( filtered )
-            barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getByMaterial("50/50W-0100");
+            barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getByMaterial("50/50W-0010");
         else
             barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getAll();
     }

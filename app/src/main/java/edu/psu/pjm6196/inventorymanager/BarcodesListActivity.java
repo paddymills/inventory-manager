@@ -37,10 +37,17 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
     private BarcodeViewModel barcodeViewModel;
     private boolean filtered = false;
+
+    private Menu toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcodes_list);
+
+        if (savedInstanceState != null) {
+            filtered = savedInstanceState.getBoolean("filtered", false);
+            filterMaterial();
+        }
 
         RecyclerView recyclerView = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
@@ -73,7 +80,8 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.query_menu, menu);
+        inflater.inflate(R.menu.list_barcodes_menu, menu);
+        toolbar = menu;
 
         if (filtered)
             menu.findItem(R.id.menu_filter).setIcon(R.drawable.ic_nofilter);
@@ -98,6 +106,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
 
             startActivity(intent);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -144,7 +153,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
 
         // set icon
-        MenuItem menu_item = findViewById(R.id.menu_filter);
+        MenuItem menu_item = toolbar.findItem(R.id.menu_filter);
         if (filtered)
             menu_item.setIcon(R.drawable.ic_nofilter);
         else
