@@ -161,7 +161,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         // display toast of what happened
         String message = filtered ? "Barcodes filtered" : "Filter removed";
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
         return true;
     }
