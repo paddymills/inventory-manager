@@ -170,12 +170,14 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
     return false;
   }
 
-  private void validateBarcodesDisplayed(@NonNull GraphicOverlay graphicOverlay) {
+  public void validateBarcodesDisplayed(@NonNull GraphicOverlay graphicOverlay) {
     for ( Map.Entry<String, BarcodeGraphic> barcode : this.barcodes.entrySet() ) {
       if ( !barcode.getValue().isActive() ) {
         graphicOverlay.remove(barcode.getKey());
       }
     }
+
+    graphicOverlay.remove(VisionProcessorBase.DEBUG_GRAPHIC_KEY);
   }
 
   private static void logExtrasForTesting(Barcode barcode) {
