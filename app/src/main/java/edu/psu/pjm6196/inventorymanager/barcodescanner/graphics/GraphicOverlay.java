@@ -21,12 +21,11 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 
 import com.google.common.base.Preconditions;
 
 import java.util.HashMap;
-
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.Graphic;
 
 /**
  * A view which renders a series of custom graphics to be overlayed on top of an associated preview
@@ -173,5 +172,13 @@ public class GraphicOverlay extends View {
         graphic.draw(canvas);
       }
     }
+  }
+
+  @Override
+  public boolean performClick() {
+    sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_CLICKED);
+    super.performClick();
+
+    return true;
   }
 }
