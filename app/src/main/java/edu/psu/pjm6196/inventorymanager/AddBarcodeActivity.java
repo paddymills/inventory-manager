@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.Material;
+import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
 
 public class AddBarcodeActivity extends CustomAppCompatActivity {
 
@@ -49,24 +50,16 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     @Override
-    protected Class<?> getBackButtonClass() {
-        // TODO: allow this to fired from MainActivity
-        return BarcodesListActivity.class;
-    }
-
-    @Override
     protected void onSaveInstanceState(@NonNull Bundle instanceState) {
         super.onSaveInstanceState(instanceState);
         instanceState.putInt("mode", mode);
 
         instanceState.putParcelable("barcode", getFormValuesUnchecked(false));
-
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         super.onRestoreInstanceState(instanceState);
-
         this.mode = instanceState.getInt("mode", ADD_MODE);
 
         setFormValues( instanceState.getParcelable("barcode") );
@@ -89,7 +82,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
                 new AlertDialog.Builder(this)
                     .setMessage("Barcode id `" + scanned_barcode + "` already exists in the database")
                     .setPositiveButton("Scan a different barcode", (dialog, id) -> scanBarcodeButtonClicked(null))
-                    .setNegativeButton("Cancel and exit Add/Edit mode", (dialog, id) -> onBackButtonClicked(null))
+                    .setNegativeButton("Cancel and exit Add/Edit mode", (dialog, id) -> finish())
                     .create()
                     .show();
             }
@@ -105,7 +98,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     private void scanBarcodeButtonClicked(View view) {
         Intent intent = new Intent(this, ScanActivity.class);
-        intent.putExtra("calling_activity", "AddBarcode");
+        intent.putExtra(ActivityDirector.KEY, ActivityDirector.ADD);
         intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
 
         startActivity(intent);
@@ -134,9 +127,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
             }
 
-            // clear form
-//            setFormValues(null);
-            onBackButtonClicked(view);
+            finish();
         }
 
     }

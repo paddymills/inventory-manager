@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
+import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
 
 public class MainActivity extends CustomAppCompatActivity {
 
@@ -23,13 +24,18 @@ public class MainActivity extends CustomAppCompatActivity {
 
         findViewById(R.id.btn_list)
             .setOnClickListener(
-                v -> startActivity(new Intent(this, BarcodesListActivity.class))
+                v -> {
+                    Intent intent = new Intent(this, BarcodesListActivity.class);
+                    intent.putExtra(ActivityDirector.KEY, ActivityDirector.MAIN);
+
+                    startActivity(intent);
+                }
             );
 
         findViewById(R.id.btn_move)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity", "Main");
+                intent.putExtra(ActivityDirector.KEY, ActivityDirector.MAIN);
                 intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MOVE_MATERIAL.toString());
 
                 startActivity(intent);
@@ -38,7 +44,7 @@ public class MainActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity", "Main");
+                intent.putExtra(ActivityDirector.KEY, ActivityDirector.MAIN);
                 intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FIND_MATERIAL.toString());
 
                 startActivity(intent);
