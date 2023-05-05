@@ -135,7 +135,7 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
   @Override
   protected void onSuccess(@NonNull List<Barcode> detectedBarcodes, @NonNull GraphicOverlay graphicOverlay) {
     if (detectedBarcodes.isEmpty()) {
-      Log.v(MANUAL_TESTING_LOG, "No barcode has been detected");
+//      Log.v(MANUAL_TESTING_LOG, "No barcode has been detected");
       validateBarcodesDisplayed(graphicOverlay);
     }
 

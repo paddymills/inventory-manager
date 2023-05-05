@@ -16,8 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -25,29 +29,29 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
+import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
 
 public class BarcodesListActivity extends CustomAppCompatActivity {
+
+    public interface ListFilterListener {
+        void setFilter(BarcodeViewModel model);
+    }
 
     private static final String TAG = "BarcodesListing";
 
     private BarcodeViewModel barcodeViewModel;
     private boolean filtered = false;
 
-    private Menu toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcodes_list);
-
-        if (savedInstanceState != null) {
-            filtered = savedInstanceState.getBoolean("filtered", false);
-            filterMaterial();
-        }
 
         RecyclerView recyclerView = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
@@ -58,22 +62,55 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
 
         Intent callingIntent = getIntent();
-        if ( callingIntent.hasExtra("back_button_clicked") )
-            adapter.notifyDataSetChanged();
+        if (savedInstanceState != null) {
+            filtered = savedInstanceState.getBoolean("filtered", false);
+            // TODO: restore filtered by specific listener
+            filterMaterial(null);
+        }
+
 
         if ( callingIntent.hasExtra("barcode") ) {
             String scanned_barcode = callingIntent.getStringExtra("barcode");
             Log.d(TAG, "Got barcode from scanner: " + scanned_barcode);
+
             // TODO: filter list to either show barcode or show all with a particular attribute of scanned_barcode
+            filterMaterial(model -> model.filterByIdHashBarcode(filtered, scanned_barcode));
         }
+
+        ActivityResultLauncher<Intent> getIds = registerForActivityResult(
+            new ActivityResultContract<Intent, ArrayList<String>>() {
+                @NonNull
+                @Override
+                public Intent createIntent(@NonNull Context context, Intent intent) {
+                    intent.putExtra(ActivityDirector.KEY, ActivityDirector.LIST);
+                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST.toString());
+
+                    return intent;
+                }
+
+                @Override
+                public ArrayList<String> parseResult(int i, @Nullable Intent intent) {
+                    assert intent != null;
+                    return intent.getStringArrayListExtra("barcode_ids");
+                }
+            },
+            result -> {
+                Log.d(TAG, "got result: " + result);
+
+                // TODO: filter list to either show barcode or show all with a particular attribute of scanned_barcode
+                filtered = true;
+                filterMaterial(model -> model.filterByIdHashBarcodes(filtered, result));
+            });
 
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
-                Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra("calling_activity", "BarcodesList");
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST.toString());
 
-                startActivity(intent);
+                Intent intent = new Intent(this, ScanActivity.class);
+//                intent.putExtra(ActivityDirector.KEY, ActivityDirector.LIST);
+//                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST.toString());
+
+                getIds.launch(intent);
+//                startActivity(intent);
             });
     }
 
@@ -81,7 +118,6 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.list_barcodes_menu, menu);
-        toolbar = menu;
 
         if (filtered)
             menu.findItem(R.id.menu_filter).setIcon(R.drawable.ic_nofilter);
@@ -97,12 +133,12 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
             // toggle filtering
             filtered = !filtered;
 
-            return filterMaterial();
+            return filterMaterial(null);
         }
 
         if (item.getItemId() == R.id.menu_add) {
             Intent intent = new Intent(this, AddBarcodeActivity.class);
-            intent.putExtra("calling_activity", "BarcodesList");
+            intent.putExtra("return_activity", ActivityDirector.LIST);
             intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
 
             startActivity(intent);
@@ -110,10 +146,6 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-    @Override
-    protected Class<?> getBackButtonClass() {
-        return MainActivity.class;
     }
 
     @Override
@@ -128,32 +160,36 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         filtered = instanceState.getBoolean("filtered", false);
         if ( filtered )
-            filterMaterial();
+            filterMaterial(null);
     }
 
-    public void displayMaterial(int id) {
-        BarcodeDatabase.getBarcode(id, barcode -> {
-            Bundle args = new Bundle();
-            args.putParcelable("barcode", barcode);
+    public void displayMaterial(Barcode barcode) {
+        Bundle args = new Bundle();
+        args.putParcelable("barcode", barcode);
 
-            BarcodeDisplayFragment barcodeDisplay = new BarcodeDisplayFragment();
-            barcodeDisplay.setArguments(args);
-            barcodeDisplay.show(getSupportFragmentManager(), "barcodeDisplay");
-        });
+        BarcodeDisplayFragment barcodeDisplay = new BarcodeDisplayFragment();
+        barcodeDisplay.setArguments(args);
+        barcodeDisplay.show(getSupportFragmentManager(), "barcodeDisplay");
     }
 
-    public boolean filterMaterial() {
+    public boolean filterMaterial(ListFilterListener listener) {
         // set recycler view to have filtered/non-filtered list
         RecyclerView recycler = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
         recycler.setAdapter(adapter);
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
-        barcodeViewModel.filterBarcodes(filtered);
+
+        if (listener == null)
+            barcodeViewModel.filterBarcodes(filtered);
+        else
+            listener.setFilter(barcodeViewModel);
+
 
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
 
         // set icon
-        MenuItem menu_item = toolbar.findItem(R.id.menu_filter);
+        Toolbar menu = findViewById(R.id.toolbar);
+        MenuItem menu_item = menu.getMenu().findItem(R.id.menu_filter);
         if (filtered)
             menu_item.setIcon(R.drawable.ic_nofilter);
         else
@@ -207,7 +243,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
                     extrasView.setVisibility(this.expanded ? View.VISIBLE : View.GONE);
                 });
                 view.setOnLongClickListener(v -> {
-                    displayMaterial(barcode.id);
+                    displayMaterial(barcode);
 
                     return true;
                 });

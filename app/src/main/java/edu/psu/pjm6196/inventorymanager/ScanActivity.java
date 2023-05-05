@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
+import androidx.appcompat.widget.Toolbar;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageAnalysis;
@@ -48,7 +49,6 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
     private PreviewView previewView;
     private GraphicOverlay graphicOverlay;
-    private Menu toolbar;
 
     private ProcessCameraProvider cameraProvider;
     private CameraSelector cameraSelector;
@@ -58,7 +58,6 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     private boolean requiresImageSourceUpdate;
     private boolean scanning_is_paused;
     private CallingActivityIntent scan_use_case;
-    private String callingActivity;
 
     // for knowing what the calling activity wants to do with the scanned data barcode(s)
     public enum CallingActivityIntent {
@@ -113,15 +112,9 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         Log.i(TAG, "onCreate");
 
         Intent callingIntent = getIntent();
-        boolean calledFromSettings = callingIntent.getBooleanExtra("called_from_settings", false);
-        if ( !calledFromSettings )
-            callingActivity = callingIntent.getStringExtra("calling_activity");
-
         String use_case = callingIntent.getStringExtra("calling_activity_intent");
         if ( use_case != null )
             scan_use_case = CallingActivityIntent.fromString(use_case);
-        else if ( !calledFromSettings )
-            Log.e(TAG, "No use case passed from non-Settings activity: " + getCallingActivity().getClassName());
 
         // set barcode scan lifetime
         BarcodeScannerProcessor.set_barcode_lifetime(PreferenceUtils.getBarcodeLifetime(this));
@@ -135,15 +128,17 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         super.onSaveInstanceState(instanceState);
 
         instanceState.putString("calling_activity_intent", scan_use_case.toString());
-        instanceState.putString("calling_activity_class", callingActivity);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         super.onRestoreInstanceState(instanceState);
 
-        scan_use_case = CallingActivityIntent.fromString(instanceState.getString("calling_activity_intent"));
-        callingActivity = instanceState.getString("calling_activity_class");
+        String use_case = instanceState.getString("calling_activity_intent");
+        if ( use_case == null )
+            Log.e(TAG, "got null use case");
+        else
+            scan_use_case = CallingActivityIntent.fromString(use_case);
     }
 
     @Override
@@ -152,37 +147,17 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         inflater.inflate(R.menu.scan_menu, menu);
 
         menu.findItem(R.id.menu_submit).setVisible(false);
-        toolbar = menu;
 
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        } else if (item.getItemId() == R.id.menu_submit) {
+        if (item.getItemId() == R.id.menu_submit) {
             return returnResult();
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected Class<?> getBackButtonClass() {
-        switch (callingActivity) {
-            case "Main":
-                return MainActivity.class;
-            case "AddBarcode":
-                return AddBarcodeActivity.class;
-            case "ListBarcodes":
-                return BarcodesListActivity.class;
-            default:
-                Log.e(TAG, "unhandled calling activity: " + callingActivity);
-        }
-
-        return null;
     }
 
     @Override
@@ -267,12 +242,13 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                 }
 
                 barcodeProcessor.commitBarcodeTouchEvents(touchedBarcodes);
+                Toolbar menu = findViewById(R.id.toolbar);
                 if ( barcodeProcessor.getNumberOfBarcodesSelected() == 0 ) {
                     Log.d(TAG, "No barcodes selected anymore");
-                    toolbar.findItem(R.id.menu_submit).setVisible(false);
+                    menu.getMenu().findItem(R.id.menu_submit).setVisible(false);
                 } else {
                     Log.d(TAG, "Barcode(s) touched: " + touchedBarcodes.toString());
-                    toolbar.findItem(R.id.menu_submit).setVisible(true);
+                    menu.getMenu().findItem(R.id.menu_submit).setVisible(true);
                 }
 
                 view.performClick();
@@ -293,14 +269,6 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
         if ( cameraProvider != null )
             cameraProvider.unbindAll();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        if ( barcodeProcessor != null )
-            barcodeProcessor.stop();
     }
 
     @Override
@@ -393,15 +361,11 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     }
 
     private boolean returnResult() {
-        Intent intent = new Intent(this, getBackButtonClass());
-
-        if ( scan_use_case.isSingleBarcodeScanUseCase() )
-            intent.putExtra("barcode_id", barcodeProcessor.getSelectedBarcodeId());
-        else
-            intent.putStringArrayListExtra("barcode_ids", (ArrayList<String>) barcodeProcessor.getSelectedBarcodeIds());
-
-        startActivity(intent);
-
-        return true;
+        return returnToCallingActivity(intent -> {
+            if ( scan_use_case.isSingleBarcodeScanUseCase() )
+                intent.putExtra("barcode_id", barcodeProcessor.getSelectedBarcodeId());
+            else
+                intent.putStringArrayListExtra("barcode_ids", (ArrayList<String>) barcodeProcessor.getSelectedBarcodeIds());
+        });
     }
 }
