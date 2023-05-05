@@ -47,8 +47,6 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     private static final int CAMERA_REQUEST_CODE = 475;
 
     public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
-    private PreviewView previewView;
-    private GraphicOverlay graphicOverlay;
 
     private ProcessCameraProvider cameraProvider;
     private CameraSelector cameraSelector;
@@ -57,37 +55,22 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     private BarcodeScannerProcessor barcodeProcessor;
     private boolean requiresImageSourceUpdate;
     private boolean scanning_is_paused;
-    private CallingActivityIntent scan_use_case;
+    private int scan_use_case;
 
     // for knowing what the calling activity wants to do with the scanned data barcode(s)
-    public enum CallingActivityIntent {
+    public static class CallingActivityIntent {
         // single barcode
-        ADD_MATERIAL("add"),
-        FIND_MATERIAL("find"),
-        MOVE_MATERIAL("move"),
+        public static final int ADD_MATERIAL = 1;
+        public static final int FIND_MATERIAL = 2;
+        public static final int MOVE_MATERIAL = 3;
 
         // multiple barcodes
-        FILTER_LIST("filter");
-//        TAKE_INVENTORY("take_inventory");
+        public static final int FILTER_LIST = 4;
+//        public static final int TAKE_INVENTORY = 5;
 
 
-        private final String name;
-        CallingActivityIntent(String name) {
-            this.name = name;
-        }
-
-        // enum constructor from: https://stackoverflow.com/a/2965252
-        public static CallingActivityIntent fromString(String name) {
-            for (CallingActivityIntent c : CallingActivityIntent.values() ) {
-                if ( c.name.equalsIgnoreCase(name) )
-                    return c;
-            }
-
-            return null;
-        }
-
-        public boolean isSingleBarcodeScanUseCase() {
-            switch (this) {
+        public static boolean isSingleBarcodeScanUseCase(int use_case) {
+            switch (use_case) {
                 case ADD_MATERIAL:
                 case FIND_MATERIAL:
                 case MOVE_MATERIAL:
@@ -96,12 +79,6 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
             return false;
         }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return this.name;
-        }
     }
 
     @Override
@@ -109,36 +86,58 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
 
-        Log.i(TAG, "onCreate");
-
         Intent callingIntent = getIntent();
-        String use_case = callingIntent.getStringExtra("calling_activity_intent");
-        if ( use_case != null )
-            scan_use_case = CallingActivityIntent.fromString(use_case);
+        scan_use_case = callingIntent.getIntExtra("calling_activity_intent", 0);
+
+        // request camera permissions
+        ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
+
+        findViewById(R.id.btn_pause_scanning).setOnClickListener(v -> {
+            if ( scanning_is_paused ) {
+                bindCamera();
+                ((Button) v).setText(R.string.scan_capture_bound);
+            } else {
+                cameraProvider.unbindAll();
+                ((Button) v).setText(R.string.scan_capture_unbound);
+            }
+
+            scanning_is_paused = !scanning_is_paused;
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
 
         // set barcode scan lifetime
         BarcodeScannerProcessor.set_barcode_lifetime(PreferenceUtils.getBarcodeLifetime(this));
 
-        // request camera permissions
-        ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
+        bindCamera();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if ( barcodeProcessor != null )
+            barcodeProcessor.stop();
+
+        if ( cameraProvider != null )
+            cameraProvider.unbindAll();
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle instanceState) {
         super.onSaveInstanceState(instanceState);
 
-        instanceState.putString("calling_activity_intent", scan_use_case.toString());
+        instanceState.putInt("calling_activity_intent", scan_use_case);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         super.onRestoreInstanceState(instanceState);
 
-        String use_case = instanceState.getString("calling_activity_intent");
-        if ( use_case == null )
-            Log.e(TAG, "got null use case");
-        else
-            scan_use_case = CallingActivityIntent.fromString(use_case);
+        scan_use_case = instanceState.getInt("calling_activity_intent");
     }
 
     @Override
@@ -174,50 +173,31 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
             grantResults.length > 0 &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
-            postPermissionsGrantedSetup();
-        }
 
-        else {
-            Toast.makeText(this, "Barcode scanner requires camera permissions", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(this, MainActivity.class));
-        }
-    }
+            // if we need to dynamically select camera lens use CameraSelector.Builder
+            cameraSelector = new CameraSelector.Builder()
+                .requireLensFacing(cameraLens)
+                .build();
 
-    private void postPermissionsGrantedSetup() {
-        previewView = findViewById(R.id.scan_preview);
-        graphicOverlay = findViewById(R.id.scan_overlay);
-
-        graphicOverlay.setOnTouchListener(this);
-
-        // if we need to dynamically select camera lens use CameraSelector.Builder
-        cameraSelector = new CameraSelector.Builder().requireLensFacing(cameraLens).build();
-
-        new ViewModelProvider(
+            new ViewModelProvider(
                 this,
                 (ViewModelProvider.Factory) ViewModelProvider.AndroidViewModelFactory
-                        .getInstance(getApplication())
-        )
+                    .getInstance(getApplication())
+            )
                 .get(CameraXViewModel.class)
                 .getProcessCameraProvider()
                 .observe( this, provider -> {
                     cameraProvider = provider;
                     bindCamera();
                 });
+        }
 
-        findViewById(R.id.btn_pause_scanning).setOnClickListener(v -> {
-            if ( scanning_is_paused ) {
-                bindCamera();
-                ((Button) v).setText(R.string.scan_capture_bound);
-            } else {
-                cameraProvider.unbindAll();
-                ((Button) v).setText(R.string.scan_capture_unbound);
-            }
-
-            scanning_is_paused = !scanning_is_paused;
-        });
+        else {
+            Toast.makeText(this, "Barcode scanner requires camera permissions", Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
-//    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         // to handle touch event on GraphicOverlay
@@ -230,7 +210,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                 // but we should just handle multiples in case
 
                 if (
-                    this.scan_use_case.isSingleBarcodeScanUseCase() &&
+                    CallingActivityIntent.isSingleBarcodeScanUseCase(this.scan_use_case) &&
                     // use >= here just in case something bad happened and selected barcodes is > 1
                     barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) >= 1
                 ) {
@@ -247,34 +227,19 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                     Log.d(TAG, "No barcodes selected anymore");
                     menu.getMenu().findItem(R.id.menu_submit).setVisible(false);
                 } else {
-                    Log.d(TAG, "Barcode(s) touched: " + touchedBarcodes.toString());
+                    Log.d(TAG, "Barcode(s) touched: " + touchedBarcodes);
                     menu.getMenu().findItem(R.id.menu_submit).setVisible(true);
                 }
-
-                view.performClick();
-                return true;
             }
+
+            view.performClick();
+            return true;
         }
 
-        view.performClick();
+        else
+            Log.d(TAG, "onTouch got motion type other than ACTION_DOWN: " + motionEvent.getAction());
+
         return false;
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if ( barcodeProcessor != null )
-            barcodeProcessor.stop();
-
-        if ( cameraProvider != null )
-            cameraProvider.unbindAll();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        bindCamera();
     }
 
     private void bindCamera() {
@@ -305,7 +270,9 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
             previewBuilder.setResolutionSelector( res );
 
         preview = previewBuilder.build();
-        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+        preview.setSurfaceProvider(
+            ((PreviewView) findViewById(R.id.scan_preview)).getSurfaceProvider()
+        );
     }
 
     // @OptIn because of `barcodeProcessor.processImageProxy`
@@ -320,6 +287,8 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         if ( barcodeProcessor != null )
             barcodeProcessor.stop();
 
+
+        GraphicOverlay graphicOverlay = findViewById(R.id.scan_overlay);
         barcodeProcessor = new BarcodeScannerProcessor(this);
 
         ImageAnalysis.Builder imageAnalysisBuilder = new ImageAnalysis.Builder();
@@ -358,11 +327,15 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
                 barcodeProcessor.processImageProxy(imageProxy, graphicOverlay);
             });
+
+
+
+        graphicOverlay.setOnTouchListener(this);
     }
 
     private boolean returnResult() {
         return returnToCallingActivity(intent -> {
-            if ( scan_use_case.isSingleBarcodeScanUseCase() )
+            if ( CallingActivityIntent.isSingleBarcodeScanUseCase(scan_use_case) )
                 intent.putExtra("barcode_id", barcodeProcessor.getSelectedBarcodeId());
             else
                 intent.putStringArrayListExtra("barcode_ids", (ArrayList<String>) barcodeProcessor.getSelectedBarcodeIds());
