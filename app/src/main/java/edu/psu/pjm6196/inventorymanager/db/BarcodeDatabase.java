@@ -18,23 +18,24 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @Database(entities = {Barcode.class}, version = 1, exportSchema = false)
 public abstract class BarcodeDatabase extends RoomDatabase {
-    public interface BarcodeListener {
-        void onBarcodeReturned(Barcode barcode);
-    }
-
-    public abstract BarcodeDAO barcodeDAO();
-
     private static volatile BarcodeDatabase INSTANCE;
+    private static final RoomDatabase.Callback createBarcodeDatabaseCallback = new RoomDatabase.Callback() {
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
+            createBarcodeTable();
+        }
+    };
 
     public static BarcodeDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (BarcodeDatabase.class) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(
-                        context.getApplicationContext(),
-                        BarcodeDatabase.class,
-                        "barcode_database"
-                    )
+                            context.getApplicationContext(),
+                            BarcodeDatabase.class,
+                            "barcode_database"
+                        )
                         .addCallback(createBarcodeDatabaseCallback)
                         .build();
                 }
@@ -44,38 +45,13 @@ public abstract class BarcodeDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
-    private static final RoomDatabase.Callback createBarcodeDatabaseCallback = new RoomDatabase.Callback() {
-        @Override
-        public void onCreate(@NonNull SupportSQLiteDatabase db) {
-            super.onCreate(db);
-            createBarcodeTable();
-        }
-    };
-
     public static void ensureInstanceIsSet(Context context) {
         getDatabase(context);
     }
 
     private static void createBarcodeTable() {
-        for (int i=0; i<TestData.ids.length; i++)
-            insert( new Barcode(0, TestData.ids[i], TestData.materials[i]) );
-    }
-
-    public static void getBarcode(int id, BarcodeListener listener) {
-        Handler handler = new Handler(Looper.getMainLooper()) {
-            @Override
-            public void handleMessage(Message message) {
-                super.handleMessage(message);
-                listener.onBarcodeReturned((Barcode) message.obj);
-            }
-        };
-
-        (new Thread(() -> {
-            Message msg = handler.obtainMessage();
-            msg.obj = INSTANCE.barcodeDAO().getById(id);
-
-            handler.sendMessage(msg);
-        })).start();
+        for (int i = 0; i < TestData.ids.length; i++)
+            insert(new Barcode(0, TestData.ids[i], TestData.materials[i]));
     }
 
     public static void getBarcodeByIdHash(String id_hash, BarcodeListener listener) {
@@ -99,10 +75,17 @@ public abstract class BarcodeDatabase extends RoomDatabase {
     }
 
     public static void update(Barcode barcode) {
+        // TODO: log(archive) previous barcode values
         (new Thread(() -> INSTANCE.barcodeDAO().update(barcode))).start();
     }
 
     public static void delete(Barcode barcode) {
         (new Thread(() -> INSTANCE.barcodeDAO().delete(barcode))).start();
+    }
+
+    public abstract BarcodeDAO barcodeDAO();
+
+    public interface BarcodeListener {
+        void onBarcodeReturned(Barcode barcode);
     }
 }
