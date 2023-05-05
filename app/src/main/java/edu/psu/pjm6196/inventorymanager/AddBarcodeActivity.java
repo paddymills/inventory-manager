@@ -22,6 +22,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     public static final int ADD_MODE = 0;
     public static final int EDIT_MODE = 1;
     private int mode;
+    private Barcode barcode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +55,8 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         super.onSaveInstanceState(instanceState);
         instanceState.putInt("mode", mode);
 
-        instanceState.putParcelable("barcode", getFormValuesUnchecked(false));
+        getFormValuesUnchecked(false);
+        instanceState.putParcelable("barcode", barcode);
     }
 
     @Override
@@ -62,7 +64,8 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         super.onRestoreInstanceState(instanceState);
         this.mode = instanceState.getInt("mode", ADD_MODE);
 
-        setFormValues( instanceState.getParcelable("barcode") );
+        barcode = instanceState.getParcelable("barcode");
+        setFormValues();
     }
 
     private void handleIntent(Intent intent) {
@@ -91,8 +94,8 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         }
 
         if ( mode == EDIT_MODE) {
-            Barcode barcode = (Barcode) intent.getParcelableExtra("barcode");
-            setFormValues(barcode);
+            barcode = (Barcode) intent.getParcelableExtra("barcode");
+            setFormValues();
         }
     }
 
@@ -105,26 +108,17 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
     }
 
     private void submitButtonClicked(View view) {
-        Barcode barcode = getFormValuesChecked();
-        if ( barcode != null ) {
-            // TODO: validate barcode does not exist if in database
+        if ( getFormValuesChecked() ) {
 
 
             if ( mode == ADD_MODE ) {
+                // TODO: validate barcode does not exist if in database
                 BarcodeDatabase.insert(barcode);
                 Toast.makeText(this, "Barcode added", Toast.LENGTH_SHORT).show();
             }
             else {    // edit mode
-                BarcodeDatabase.getBarcodeByIdHash(
-                    barcode.id_hash,
-                    b -> {
-                        barcode.id = b.id;
-
-                        BarcodeDatabase.update(barcode);
-                        Toast.makeText(this, "Barcode updated", Toast.LENGTH_SHORT).show();
-                    }
-                );
-
+                BarcodeDatabase.update(barcode);
+                Toast.makeText(this, "Barcode updated", Toast.LENGTH_SHORT).show();
             }
 
             finish();
@@ -132,7 +126,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     }
 
-    private void setFormValues(Barcode barcode) {
+    private void setFormValues() {
         // find views
         TextView id_view    = findViewById(R.id.barcode_id);
         EditText mm_view    = findViewById(R.id.txt_mm);
@@ -149,37 +143,17 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         po_view.setText(   barcode == null ? "" : barcode.material.po_number);
     }
 
-    private Barcode getFormValues() {
-        Barcode barcode = getFormValuesUnchecked(false);
-        if (
-            barcode.id_hash.equals("") ||
-            barcode.material.material_master.equals("") ||
-            barcode.material.grade.equals("") ||
-            barcode.material.location.equals("") ||
-            barcode.material.heat_number.equals("") ||
-            barcode.material.po_number.equals("")
-        )
-            return null;
-
-        return barcode;
+    private boolean getFormValuesChecked() {
+        getFormValuesUnchecked(true);
+        return !barcode.id_hash.equals("") &&
+            !barcode.material.material_master.equals("") &&
+            !barcode.material.grade.equals("") &&
+            !barcode.material.location.equals("") &&
+            !barcode.material.heat_number.equals("") &&
+            !barcode.material.po_number.equals("");
     }
 
-    private Barcode getFormValuesChecked() {
-        Barcode barcode = getFormValuesUnchecked(true);
-        if (
-            barcode.id_hash.equals("") ||
-                barcode.material.material_master.equals("") ||
-                barcode.material.grade.equals("") ||
-                barcode.material.location.equals("") ||
-                barcode.material.heat_number.equals("") ||
-                barcode.material.po_number.equals("")
-        )
-            return null;
-
-        return barcode;
-    }
-
-    private Barcode getFormValuesUnchecked(boolean alert) {
+    private void getFormValuesUnchecked(boolean alert) {
         // get values
         String id    = validateTextView(R.id.barcode_id, "Barcode ID", alert);
         String mm    = validateTextView(R.id.txt_mm,"Material Master", alert);
@@ -188,7 +162,8 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
         String heat  = validateTextView(R.id.txt_heat, "Heat Number", alert);
         String po    = validateTextView(R.id.txt_po, "PO Number", alert);
 
-        return new Barcode(0, id, new Material(mm, loc, grade, heat, po));
+        barcode.id_hash = id;
+        barcode.material = new Material(mm, loc, grade, heat, po);
     }
 
     /**

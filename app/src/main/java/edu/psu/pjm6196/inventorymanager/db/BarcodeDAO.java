@@ -29,7 +29,7 @@ public interface BarcodeDAO {
     LiveData<List<Barcode>> getById(int barcode_id);
 
     @Query("SELECT * FROM barcodes WHERE hash = :id_hash")
-    LiveData<List<Barcode>> getByIdHash(String id_hash);
+    Barcode getByIdHash(String id_hash);
 
     @Query("SELECT * FROM barcodes WHERE hash IN (:id_hash)")
     LiveData<List<Barcode>> getByIdHashes(ArrayList<String> id_hash);

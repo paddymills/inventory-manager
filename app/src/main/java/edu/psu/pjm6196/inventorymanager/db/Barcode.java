@@ -27,7 +27,7 @@ public class Barcode implements Parcelable {
     public Material material;
 
     public String title() {
-        return this.id + ": " + this.id_hash + " (" + this.material.material_master + ")";
+        return this.id + ": " + this.id_hash;
     }
 
     @Override

@@ -61,20 +61,10 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
         barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
 
-        Intent callingIntent = getIntent();
         if (savedInstanceState != null) {
             filtered = savedInstanceState.getBoolean("filtered", false);
             // TODO: restore filtered by specific listener
             filterMaterial(null);
-        }
-
-
-        if ( callingIntent.hasExtra("barcode") ) {
-            String scanned_barcode = callingIntent.getStringExtra("barcode");
-            Log.d(TAG, "Got barcode from scanner: " + scanned_barcode);
-
-            // TODO: filter list to either show barcode or show all with a particular attribute of scanned_barcode
-            filterMaterial(model -> model.filterByIdHashBarcode(filtered, scanned_barcode));
         }
 
         ActivityResultLauncher<Intent> getIds = registerForActivityResult(
@@ -104,13 +94,8 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
-
                 Intent intent = new Intent(this, ScanActivity.class);
-//                intent.putExtra(ActivityDirector.KEY, ActivityDirector.LIST);
-//                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST.toString());
-
                 getIds.launch(intent);
-//                startActivity(intent);
             });
     }
 

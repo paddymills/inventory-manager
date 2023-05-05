@@ -22,13 +22,6 @@ public class BarcodeViewModel extends AndroidViewModel {
         else
             barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getAll();
     }
-
-    public void filterByIdHashBarcode(boolean filtered, String id_hash) {
-        if ( filtered )
-            barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getByIdHash(id_hash);
-        else
-            barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getAll();
-    }
     public void filterByIdHashBarcodes(boolean filtered, ArrayList<String> id_hashes) {
         if ( filtered )
             barcodes = BarcodeDatabase.getDatabase(getApplication()).barcodeDAO().getByIdHashes(id_hashes);
