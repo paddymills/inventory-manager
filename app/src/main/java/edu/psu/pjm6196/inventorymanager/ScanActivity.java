@@ -36,18 +36,15 @@ import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 public class ScanActivity extends CustomAppCompatActivity implements View.OnTouchListener {
 
+    public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
     /*
         This class and its supporting classes/utilities are either copied from (where noted)
         or heavily influenced by the design of Google's sample codebase
         at https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart
      */
     private static final String TAG = "ScanActivity";
-
-    private static final String[] CAMERA_PERMISSION = new String[] {Manifest.permission.CAMERA};
+    private static final String[] CAMERA_PERMISSION = new String[]{Manifest.permission.CAMERA};
     private static final int CAMERA_REQUEST_CODE = 475;
-
-    public static final int cameraLens = CameraSelector.LENS_FACING_BACK;
-
     private ProcessCameraProvider cameraProvider;
     private CameraSelector cameraSelector;
     private Preview preview;
@@ -56,30 +53,6 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     private boolean requiresImageSourceUpdate;
     private boolean scanning_is_paused;
     private int scan_use_case;
-
-    // for knowing what the calling activity wants to do with the scanned data barcode(s)
-    public static class CallingActivityIntent {
-        // single barcode
-        public static final int ADD_MATERIAL = 1;
-        public static final int FIND_MATERIAL = 2;
-        public static final int MOVE_MATERIAL = 3;
-
-        // multiple barcodes
-        public static final int FILTER_LIST = 4;
-//        public static final int TAKE_INVENTORY = 5;
-
-
-        public static boolean isSingleBarcodeScanUseCase(int use_case) {
-            switch (use_case) {
-                case ADD_MATERIAL:
-                case FIND_MATERIAL:
-                case MOVE_MATERIAL:
-                    return true;
-            }
-
-            return false;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +66,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
 
         findViewById(R.id.btn_pause_scanning).setOnClickListener(v -> {
-            if ( scanning_is_paused ) {
+            if (scanning_is_paused) {
                 bindCamera();
                 ((Button) v).setText(R.string.scan_capture_bound);
             } else {
@@ -119,10 +92,10 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     protected void onPause() {
         super.onPause();
 
-        if ( barcodeProcessor != null )
+        if (barcodeProcessor != null)
             barcodeProcessor.stop();
 
-        if ( cameraProvider != null )
+        if (cameraProvider != null)
             cameraProvider.unbindAll();
     }
 
@@ -170,8 +143,8 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
         if (
             requestCode == CAMERA_REQUEST_CODE &&
-            grantResults.length > 0 &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
+                grantResults.length > 0 &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
 
             // if we need to dynamically select camera lens use CameraSelector.Builder
@@ -186,13 +159,11 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
             )
                 .get(CameraXViewModel.class)
                 .getProcessCameraProvider()
-                .observe( this, provider -> {
+                .observe(this, provider -> {
                     cameraProvider = provider;
                     bindCamera();
                 });
-        }
-
-        else {
+        } else {
             Toast.makeText(this, "Barcode scanner requires camera permissions", Toast.LENGTH_LONG).show();
             finish();
         }
@@ -201,18 +172,18 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         // to handle touch event on GraphicOverlay
-        if ( motionEvent.getAction() == MotionEvent.ACTION_DOWN ) {
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
 
             ArrayList<String> touchedBarcodes = barcodeProcessor.handleTouchEvent(motionEvent);
-            if ( touchedBarcodes.size() > 0 ) {
+            if (touchedBarcodes.size() > 0) {
                 // touch occurred in at least 1 barcode
                 // probably will only ever happen in 1 barcode (until we impl swiping to select),
                 // but we should just handle multiples in case
 
                 if (
                     CallingActivityIntent.isSingleBarcodeScanUseCase(this.scan_use_case) &&
-                    // use >= here just in case something bad happened and selected barcodes is > 1
-                    barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) >= 1
+                        // use >= here just in case something bad happened and selected barcodes is > 1
+                        barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) >= 1
                 ) {
                     Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
                     barcodeProcessor.clearSelected();
@@ -223,7 +194,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
                 barcodeProcessor.commitBarcodeTouchEvents(touchedBarcodes);
                 Toolbar menu = findViewById(R.id.toolbar);
-                if ( barcodeProcessor.getNumberOfBarcodesSelected() == 0 ) {
+                if (barcodeProcessor.getNumberOfBarcodesSelected() == 0) {
                     Log.d(TAG, "No barcodes selected anymore");
                     menu.getMenu().findItem(R.id.menu_submit).setVisible(false);
                 } else {
@@ -234,16 +205,14 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
             view.performClick();
             return true;
-        }
-
-        else
+        } else
             Log.d(TAG, "onTouch got motion type other than ACTION_DOWN: " + motionEvent.getAction());
 
         return false;
     }
 
     private void bindCamera() {
-        if ( cameraProvider != null ) {
+        if (cameraProvider != null) {
             cameraProvider.unbindAll();
             bindCameraPreview();
             bindCameraAnalysis();
@@ -253,21 +222,21 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     }
 
     private void bindCameraPreview() {
-        if ( !PreferenceUtils.isLivePreviewEnabled(this) )
+        if (!PreferenceUtils.isLivePreviewEnabled(this))
             return;
 
-        if ( cameraProvider == null )
+        if (cameraProvider == null)
             return;
 
-        if ( preview != null )
+        if (preview != null)
             cameraProvider.unbind(preview);
 
         Preview.Builder previewBuilder = new Preview.Builder();
 
         // get resolution from preferences
         ResolutionSelector res = PreferenceUtils.getTargetCameraResolution(this);
-        if ( res != null )
-            previewBuilder.setResolutionSelector( res );
+        if (res != null)
+            previewBuilder.setResolutionSelector(res);
 
         preview = previewBuilder.build();
         preview.setSurfaceProvider(
@@ -278,13 +247,13 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     // @OptIn because of `barcodeProcessor.processImageProxy`
     @OptIn(markerClass = ExperimentalGetImage.class)
     private void bindCameraAnalysis() {
-        if ( cameraProvider == null )
+        if (cameraProvider == null)
             return;
 
-        if ( imageAnalysis != null )
+        if (imageAnalysis != null)
             cameraProvider.unbind(imageAnalysis);
 
-        if ( barcodeProcessor != null )
+        if (barcodeProcessor != null)
             barcodeProcessor.stop();
 
 
@@ -295,10 +264,10 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
         // get resolution from preferences
         ResolutionSelector res = PreferenceUtils.getTargetCameraResolution(this);
-        if ( res != null )
-            imageAnalysisBuilder.setResolutionSelector( res );
+        if (res != null)
+            imageAnalysisBuilder.setResolutionSelector(res);
 
-//        imageAnalysisBuilder.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST);
+        imageAnalysisBuilder.setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST);
         imageAnalysis = imageAnalysisBuilder.build();
 
         requiresImageSourceUpdate = true;
@@ -310,7 +279,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                 if (requiresImageSourceUpdate) {
                     boolean isImageFlipped = false;
 
-                    int width  = imageProxy.getWidth();
+                    int width = imageProxy.getWidth();
                     int height = imageProxy.getHeight();
                     switch (imageProxy.getImageInfo().getRotationDegrees()) {
                         case 0:
@@ -329,16 +298,40 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
             });
 
 
-
         graphicOverlay.setOnTouchListener(this);
     }
 
     private boolean returnResult() {
         return returnToCallingActivity(intent -> {
-            if ( CallingActivityIntent.isSingleBarcodeScanUseCase(scan_use_case) )
+            // TODO: refactor to return ArrayList<String>
+            if (CallingActivityIntent.isSingleBarcodeScanUseCase(scan_use_case))
                 intent.putExtra("barcode_id", barcodeProcessor.getSelectedBarcodeId());
             else
                 intent.putStringArrayListExtra("barcode_ids", (ArrayList<String>) barcodeProcessor.getSelectedBarcodeIds());
         });
+    }
+
+    // for knowing what the calling activity wants to do with the scanned data barcode(s)
+    public static class CallingActivityIntent {
+        // single barcode
+        public static final int ADD_MATERIAL = 1;
+        public static final int FIND_MATERIAL = 2;
+        public static final int MOVE_MATERIAL = 3;
+
+        // multiple barcodes
+        public static final int FILTER_LIST = 4;
+//        public static final int TAKE_INVENTORY = 5;
+
+
+        public static boolean isSingleBarcodeScanUseCase(int use_case) {
+            switch (use_case) {
+                case ADD_MATERIAL:
+                case FIND_MATERIAL:
+                case MOVE_MATERIAL:
+                    return true;
+            }
+
+            return false;
+        }
     }
 }
