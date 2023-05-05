@@ -35,7 +35,6 @@ import java.util.List;
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
-import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
 
 public class BarcodesListActivity extends CustomAppCompatActivity {
 
@@ -72,8 +71,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra(ActivityDirector.KEY, ActivityDirector.LIST);
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST.toString());
+                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST);
 
                     return intent;
                 }
@@ -123,8 +121,7 @@ public class BarcodesListActivity extends CustomAppCompatActivity {
 
         if (item.getItemId() == R.id.menu_add) {
             Intent intent = new Intent(this, AddBarcodeActivity.class);
-            intent.putExtra("return_activity", ActivityDirector.LIST);
-            intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
+            intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL);
 
             startActivity(intent);
             return true;

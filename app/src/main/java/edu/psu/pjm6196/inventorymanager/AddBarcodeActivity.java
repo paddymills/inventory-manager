@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.Material;
-import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
 
 public class AddBarcodeActivity extends CustomAppCompatActivity {
 
@@ -101,8 +100,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
 
     private void scanBarcodeButtonClicked(View view) {
         Intent intent = new Intent(this, ScanActivity.class);
-        intent.putExtra(ActivityDirector.KEY, ActivityDirector.ADD);
-        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL.toString());
+        intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL);
 
         startActivity(intent);
     }

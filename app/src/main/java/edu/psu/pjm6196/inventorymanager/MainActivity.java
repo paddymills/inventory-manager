@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
-import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
 
 public class MainActivity extends CustomAppCompatActivity {
 
@@ -33,7 +32,6 @@ public class MainActivity extends CustomAppCompatActivity {
             .setOnClickListener(
                 v -> {
                     Intent intent = new Intent(this, BarcodesListActivity.class);
-                    intent.putExtra(ActivityDirector.KEY, ActivityDirector.MAIN);
 
                     startActivity(intent);
                 }
@@ -44,8 +42,7 @@ public class MainActivity extends CustomAppCompatActivity {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra(ActivityDirector.KEY, ActivityDirector.MAIN);
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MOVE_MATERIAL.toString());
+                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MOVE_MATERIAL);
 
                     return intent;
                 }
@@ -71,8 +68,7 @@ public class MainActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(v -> {
                 Intent intent = new Intent(this, ScanActivity.class);
-                intent.putExtra(ActivityDirector.KEY, ActivityDirector.MAIN);
-                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FIND_MATERIAL.toString());
+                intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FIND_MATERIAL);
 
                 startActivity(intent);
             });

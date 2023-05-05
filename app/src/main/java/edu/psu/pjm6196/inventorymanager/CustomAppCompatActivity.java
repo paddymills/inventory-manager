@@ -11,48 +11,28 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import edu.psu.pjm6196.inventorymanager.utils.ActivityDirector;
-
 public abstract class CustomAppCompatActivity extends AppCompatActivity {
 
     public interface SetIntentExtrasListener {
         void setExtras(Intent intent);
     }
-    protected int returnToActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(this.getLocalClassName(), "onCreate");
         super.onCreate(savedInstanceState);
-
-        if ( savedInstanceState != null ) {
-            Log.d(this.getLocalClassName(), "Restoring returnToActivity");
-            returnToActivity = savedInstanceState.getInt(ActivityDirector.KEY);
-        }
-
-        Intent callingIntent = getIntent();
-        if ( callingIntent == null )
-            Log.d("CustomAppCompat", "callingIntent is null");
-        else if ( callingIntent.hasExtra(ActivityDirector.KEY) )
-            // already checked that key exists, so DEFAULT will probably not be set
-            returnToActivity = callingIntent.getIntExtra(ActivityDirector.KEY, ActivityDirector.DEFAULT);
-
-//        Log.d(this.getLocalClassName(), "returnToActivity is " + ActivityDirector.getActivity(returnToActivity));
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle instanceState) {
         Log.d(this.getLocalClassName(), "Saving instance state...");
         super.onSaveInstanceState(instanceState);
-
-        instanceState.putInt(ActivityDirector.KEY, returnToActivity);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         Log.d(this.getLocalClassName(), "Restoring instance state...");
         super.onRestoreInstanceState(instanceState);
-
-        if ( instanceState != null && instanceState.containsKey(ActivityDirector.KEY) )
-            returnToActivity = instanceState.getInt(ActivityDirector.KEY);
     }
 
     @Override
@@ -79,7 +59,6 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.putExtra(ActivityDirector.KEY, ActivityDirector.getActivityId(this));
 
             startActivity(intent);
             return true;
@@ -93,9 +72,11 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
     }
 
     protected boolean returnToCallingActivity(SetIntentExtrasListener listener) {
-        Intent intent = new Intent(this, ActivityDirector.getActivity(returnToActivity));
-        listener.setExtras(intent);
-//        startActivity(intent);
+//        Intent intent = new Intent(this, ActivityDirector.getActivity(returnToActivity));
+        Intent intent = new Intent(this, getCallingActivity().getClass());
+
+        if ( listener != null )
+            listener.setExtras(intent);
 
         setResult(RESULT_OK, intent);
         finish();
