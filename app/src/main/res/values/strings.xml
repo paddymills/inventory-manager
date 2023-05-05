@@ -3,30 +3,49 @@
     <string name="todo">not implemented yet…</string>
 
     <!--    main activity-->
-    <string name="main_query">Query</string>
+    <string name="main_query">Inventory List</string>
     <string name="main_move">Move Inventory</string>
-    <string name="main_issue">Issue Tags</string>
+    <string name="main_issue">Add Inventory</string>
     <string name="main_inventory">Take Inventory</string>
 
     <!--    Query activity-->
+    <string name="query_title">Barcodes Listing</string>
     <string name="query_location_label">Location</string>
     <string name="query_grade_label">Grade</string>
     <string name="query_heat_label">Heat Number</string>
     <string name="query_po_label">PO Number</string>
 
     <!--    Scan activity-->
-    <string name="scan_capture">Scan/Capture</string>
+    <string name="scan_title">Barcode Scanner</string>
+    <string name="scan_capture_bound">Pause Scanning</string>
+    <string name="scan_capture_unbound">Resume Scanning</string>
+
+    <!-- Add/Edit activity -->
+    <string name="add_title">Add Barcode</string>
+    <string name="edit_title">Edit Barcode</string>
+    <string name="id_label">Barcode ID</string>
+    <string name="loc_label">Location</string>
+    <string name="grade_label">Grade</string>
+    <string name="mm_label">Material Master</string>
+    <string name="heat_label">Heat Number</string>
+    <string name="po_label">PO Number</string>
+    <string name="submit_btn_text">Submit</string>
+    <string name="set_barcode_desc">Set Barcode</string>
+    <string name="btn_change_location_txt">Change Location</string>
 
     <!-- Navigation Bar -->
     <string name="menu_settings">Settings</string>
+    <string name="menu_filter">Filter</string>
+    <string name="menu_submit">Submit</string>
 
     <!-- Preference Titles -->
     <string name="pref_app_header">App</string>
     <string name="pref_list_display_header">List Display</string>
     <string name="pref_network_header">Network</string>
-    <string name="pref_scan_header">Scan</string>
+    <string name="pref_misc_header">Miscellaneous</string>
 
     <!-- App Preferences -->
+    <string name="prefs_title">Settings</string>
     <string name="pref_app_home_activity">Default Home Page</string>
     <string name="pref_app_theme">App Theme</string>
     <!-- for setting default activity -->
@@ -50,8 +69,14 @@
     <string name="pref_auto_scan_off">Barcodes will only be read when initiated by the scan button</string>
     <string name="fetch_data_title">…fetching…</string>
     <string name="title_activity_settings">SettingsActivity</string>
+    <string name="lifetime_duration_title">Scanned Barcode Lifetime</string>
+    <string name="lifetime_duration_summary">How long a barcode will remain displayed after it is last captured.</string>
+    <string name="lifetime_duration_default">1000</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>
+    <string name="enable_preview_summary">Do not wait for barcode processing to update preview (may cause preview to stutter).</string>
+    <string name="menu_add">Add Barcode</string>
+    <string name="start_scanner">Start Scanner</string>
 </resources>

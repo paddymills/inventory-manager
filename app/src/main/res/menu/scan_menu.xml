@@ -3,7 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".MainActivity" >
+    tools:context=".ScanActivity" >
+    <item
+        android:id="@+id/menu_submit"
+        android:icon="@drawable/ic_checkmark"
+        android:title="@string/menu_submit"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_settings"

@@ -7,12 +7,13 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
 public interface BarcodeDAO {
 
-    @Query("SELECT * FROM barcodes ORDER BY hash COLLATE NOCASE, id")
+    @Query("SELECT * FROM barcodes ORDER BY id COLLATE NOCASE, id")
     LiveData<List<Barcode>> getAll();
 
     @Insert
@@ -25,8 +26,33 @@ public interface BarcodeDAO {
     void delete(Barcode... barcodes);
 
     @Query("SELECT * FROM barcodes WHERE id = :barcode_id")
-    Barcode getById(int barcode_id);
+    LiveData<List<Barcode>> getById(int barcode_id);
 
-    @Query("SELECT * FROM barcodes WHERE material_master LIKE :search_term || '%'")
-    LiveData<List<Barcode>> getByMaterial(String search_term);
+    @Query("SELECT * FROM barcodes WHERE hash = :id_hash")
+    Barcode getByIdHash(String id_hash);
+
+    @Query("SELECT * FROM barcodes WHERE hash IN (:id_hash)")
+    LiveData<List<Barcode>> getByIdHashes(ArrayList<String> id_hash);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%'")
+    LiveData<List<Barcode>> getByMaterial(String material);
+
+    @Query("SELECT * FROM barcodes WHERE location = :location")
+    LiveData<List<Barcode>> getByLocation(String location);
+
+    @Query("SELECT * FROM barcodes WHERE heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByHeatNumber(String heat);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%' AND location = :location")
+    LiveData<List<Barcode>> getByMaterialAndLocation(String material, String location);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%' AND heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByMaterialAndHeatNumber(String material, String heat);
+
+    @Query("SELECT * FROM barcodes WHERE location = :location AND heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByLocationAndHeatNumber(String location, String heat);
+
+    @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%' AND location = :location AND heat_number LIKE :heat || '%'")
+    LiveData<List<Barcode>> getByMaterialAndLocationAndHeatNUmber(String material, String location, String heat);
+
 }
