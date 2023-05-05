@@ -78,4 +78,5 @@
     <string name="sync_header">Sync</string>
     <string name="enable_preview_summary">Do not wait for barcode processing to update preview (may cause preview to stutter).</string>
     <string name="menu_add">Add Barcode</string>
+    <string name="start_scanner">Start Scanner</string>
 </resources>
