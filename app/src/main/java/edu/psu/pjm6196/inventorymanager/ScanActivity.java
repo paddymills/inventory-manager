@@ -81,9 +81,10 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "resumed...");
 
         // set barcode scan lifetime
-        BarcodeScannerProcessor.set_barcode_lifetime(PreferenceUtils.getBarcodeLifetime(this));
+        BarcodeScannerProcessor.setBarcodeLifetime(PreferenceUtils.getBarcodeLifetime(this));
 
         bindCamera();
     }
@@ -183,7 +184,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                 if (
                     CallingActivityIntent.isSingleBarcodeScanUseCase(this.scan_use_case) &&
                         // use >= here just in case something bad happened and selected barcodes is > 1
-                        barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) >= 1
+                        barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) > 1
                 ) {
                     Toast.makeText(this, "Cannot select multiple barcodes for this use case", Toast.LENGTH_SHORT).show();
                     barcodeProcessor.clearSelected();
@@ -192,6 +193,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                     touchedBarcodes.subList(1, touchedBarcodes.size()).clear();
                 }
 
+                // valid touch scenario -> commit changes
                 barcodeProcessor.commitBarcodeTouchEvents(touchedBarcodes);
                 Toolbar menu = findViewById(R.id.toolbar);
                 if (barcodeProcessor.getNumberOfBarcodesSelected() == 0) {
@@ -201,12 +203,13 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                     Log.d(TAG, "Barcode(s) touched: " + touchedBarcodes);
                     menu.getMenu().findItem(R.id.menu_submit).setVisible(true);
                 }
+
+                barcodeProcessor.validateBarcodesDisplayed(findViewById(R.id.scan_overlay));
             }
 
             view.performClick();
             return true;
-        } else
-            Log.d(TAG, "onTouch got motion type other than ACTION_DOWN: " + motionEvent.getAction());
+        }
 
         return false;
     }
@@ -253,12 +256,14 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         if (imageAnalysis != null)
             cameraProvider.unbind(imageAnalysis);
 
-        if (barcodeProcessor != null)
+        if (barcodeProcessor == null)
+            barcodeProcessor = new BarcodeScannerProcessor(this);
+        else {
             barcodeProcessor.stop();
-
+            barcodeProcessor = new BarcodeScannerProcessor(this, barcodeProcessor);
+        }
 
         GraphicOverlay graphicOverlay = findViewById(R.id.scan_overlay);
-        barcodeProcessor = new BarcodeScannerProcessor(this);
 
         ImageAnalysis.Builder imageAnalysisBuilder = new ImageAnalysis.Builder();
 
@@ -313,25 +318,22 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
 
     // for knowing what the calling activity wants to do with the scanned data barcode(s)
     public static class CallingActivityIntent {
+        private static int enumCounter = 1;
         // single barcode
-        public static final int ADD_MATERIAL = 1;
-        public static final int FIND_MATERIAL = 2;
-        public static final int MOVE_MATERIAL = 3;
+        public static final int ADD_MATERIAL = enumCounter++;
+        public static final int MOVE_MATERIAL = enumCounter++;
+
+        // divider
+        private static final int SINGLE_MULTI_USE_CASE_SPLIT = enumCounter++;
 
         // multiple barcodes
-        public static final int FILTER_LIST = 4;
+        public static final int FIND_MATERIAL = enumCounter++;
+        public static final int FILTER_LIST = enumCounter++;
 //        public static final int TAKE_INVENTORY = 5;
 
 
         public static boolean isSingleBarcodeScanUseCase(int use_case) {
-            switch (use_case) {
-                case ADD_MATERIAL:
-                case FIND_MATERIAL:
-                case MOVE_MATERIAL:
-                    return true;
-            }
-
-            return false;
+            return use_case < SINGLE_MULTI_USE_CASE_SPLIT;
         }
     }
 }

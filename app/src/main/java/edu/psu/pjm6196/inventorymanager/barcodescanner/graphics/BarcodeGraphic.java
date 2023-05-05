@@ -38,6 +38,8 @@ public class BarcodeGraphic extends Graphic {
     private static final int UNSELECTED_COLOR = Color.WHITE;
     private static final int SELECTED_COLOR = Color.GREEN;
     public static long LIFETIME_DURATION = 1000;
+    public static long PAUSED_TIMESTAMP;
+
     protected Barcode barcode;
     private long lastScannedTime;
     private boolean isSelected;
@@ -82,7 +84,10 @@ public class BarcodeGraphic extends Graphic {
     }
 
     public boolean isActive() {
-        return System.currentTimeMillis() - this.lastScannedTime > LIFETIME_DURATION;
+        if (PAUSED_TIMESTAMP > 0 && PAUSED_TIMESTAMP - this.lastScannedTime < LIFETIME_DURATION)
+            return true;
+
+        return System.currentTimeMillis() - this.lastScannedTime < LIFETIME_DURATION;
     }
 
 
