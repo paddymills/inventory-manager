@@ -13,10 +13,6 @@ import androidx.appcompat.widget.Toolbar;
 
 public abstract class CustomAppCompatActivity extends AppCompatActivity {
 
-    public interface SetIntentExtrasListener {
-        void setExtras(Intent intent);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(this.getLocalClassName(), "onCreate");
@@ -44,7 +40,10 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
         toolbar.setTitle(getToolbarTitleResId());
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(view -> finish());
+        toolbar.setNavigationOnClickListener(view -> {
+            setResult(RESULT_CANCELED);
+            finish();
+        });
     }
 
     @Override
@@ -58,9 +57,7 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-
-            startActivity(intent);
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -75,7 +72,7 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
 //        Intent intent = new Intent(this, ActivityDirector.getActivity(returnToActivity));
         Intent intent = new Intent(this, getCallingActivity().getClass());
 
-        if ( listener != null )
+        if (listener != null)
             listener.setExtras(intent);
 
         setResult(RESULT_OK, intent);
@@ -84,8 +81,7 @@ public abstract class CustomAppCompatActivity extends AppCompatActivity {
         return true;
     }
 
-    protected void setReturnToActivityArgs(Intent intent) {
-//         for passing data back to calling intent
-        intent.putExtra("back_button_clicked", true);
+    public interface SetIntentExtrasListener {
+        void setExtras(Intent intent);
     }
 }
