@@ -7,12 +7,13 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Dao
 public interface BarcodeDAO {
 
-    @Query("SELECT * FROM barcodes ORDER BY hash COLLATE NOCASE, id")
+    @Query("SELECT * FROM barcodes ORDER BY id COLLATE NOCASE, id")
     LiveData<List<Barcode>> getAll();
 
     @Insert
@@ -25,13 +26,13 @@ public interface BarcodeDAO {
     void delete(Barcode... barcodes);
 
     @Query("SELECT * FROM barcodes WHERE id = :barcode_id")
-    Barcode getById(int barcode_id);
+    LiveData<List<Barcode>> getById(int barcode_id);
 
     @Query("SELECT * FROM barcodes WHERE hash = :id_hash")
-    Barcode getByIdHash(String id_hash);
+    LiveData<List<Barcode>> getByIdHash(String id_hash);
 
     @Query("SELECT * FROM barcodes WHERE hash IN (:id_hash)")
-    Barcode getByIdHashes(String[] id_hash);
+    LiveData<List<Barcode>> getByIdHashes(ArrayList<String> id_hash);
 
     @Query("SELECT * FROM barcodes WHERE material_master LIKE :material || '%'")
     LiveData<List<Barcode>> getByMaterial(String material);
