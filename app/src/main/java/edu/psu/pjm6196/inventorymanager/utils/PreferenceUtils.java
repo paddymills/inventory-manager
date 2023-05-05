@@ -44,6 +44,6 @@ public class PreferenceUtils {
 
         return Integer.parseInt(
             prefs.getString("lifetime_duration", String.valueOf(DEFAULT_LIFETIME))
-        ) * 1000;
+        );
     }
 }
