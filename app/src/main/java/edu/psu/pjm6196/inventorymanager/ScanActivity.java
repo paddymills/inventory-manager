@@ -10,7 +10,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,6 +25,8 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
@@ -66,12 +67,15 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
 
         findViewById(R.id.btn_pause_scanning).setOnClickListener(v -> {
+            FloatingActionButton btn = (FloatingActionButton) v;
             if (scanning_is_paused) {
                 bindCamera();
-                ((Button) v).setText(R.string.scan_capture_bound);
+                btn.setContentDescription( getResources().getString(R.string.scan_capture_bound) );
+                btn.setImageResource(R.drawable.ic_play);
             } else {
                 cameraProvider.unbindAll();
-                ((Button) v).setText(R.string.scan_capture_unbound);
+                btn.setContentDescription( getResources().getString(R.string.scan_capture_unbound) );
+                btn.setImageResource(R.drawable.ic_pause);
             }
 
             scanning_is_paused = !scanning_is_paused;
