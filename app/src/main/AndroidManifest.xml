@@ -28,6 +28,7 @@
             android:exported="false" />
         <activity
             android:name=".ScanActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
