@@ -7,11 +7,15 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Size;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.preference.ListPreference;
+import androidx.preference.MultiSelectListPreference;
 import androidx.preference.PreferenceFragmentCompat;
+
+import java.util.HashSet;
 
 public class SettingsActivity extends CustomAppCompatActivity {
 
@@ -21,9 +25,9 @@ public class SettingsActivity extends CustomAppCompatActivity {
         setContentView(R.layout.settings_activity);
         if (savedInstanceState == null) {
             getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.settings, new SettingsFragment())
-                    .commit();
+                .beginTransaction()
+                .replace(R.id.settings, new SettingsFragment())
+                .commit();
         }
     }
 
@@ -33,7 +37,7 @@ public class SettingsActivity extends CustomAppCompatActivity {
             setPreferencesFromResource(R.xml.preferences, rootKey);
 
             ListPreference pref = findPreference("camera_resolution");
-            if ( pref != null ) {
+            if (pref != null) {
                 String[] entries = get_camera_resolution_entries();
                 pref.setEntries(entries);
                 pref.setEntryValues(entries);
@@ -44,6 +48,22 @@ public class SettingsActivity extends CustomAppCompatActivity {
 
                     return true;
                 });
+            }
+
+            MultiSelectListPreference formats = findPreference("accepted_barcode_formats");
+            if (formats != null) {
+                formats.setOnPreferenceChangeListener(
+                    (preference, newValue) -> {
+                        HashSet<String> vals = (HashSet<String>) newValue;
+                        Log.d("FormatsChangedListener", "Formats changed: " + newValue);
+                        if (vals.size() == 0) {
+                            Log.d("FormatsChangedListener", "No Formats selected");
+                            vals.add("PDF_417");
+                        }
+
+                        return true;
+                    }
+                );
             }
         }
 
@@ -60,7 +80,7 @@ public class SettingsActivity extends CustomAppCompatActivity {
                 }
             } else {
                 entries =
-                    new String[] {
+                    new String[]{
                         "2000x2000",
                         "1600x1600",
                         "1200x1200",
@@ -79,7 +99,7 @@ public class SettingsActivity extends CustomAppCompatActivity {
         public CameraCharacteristics getCameraCharacteristics() {
             try {
                 FragmentActivity activity = getActivity();
-                if ( activity == null )
+                if (activity == null)
                     return null;
 
                 CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
@@ -90,7 +110,7 @@ public class SettingsActivity extends CustomAppCompatActivity {
                     if (lensFacing == null)
                         continue;
 
-                    if ( lensFacing.equals(ScanActivity.cameraLens) )
+                    if (lensFacing.equals(ScanActivity.cameraLens))
                         return cam_chars;
                 }
             } catch (CameraAccessException e) {

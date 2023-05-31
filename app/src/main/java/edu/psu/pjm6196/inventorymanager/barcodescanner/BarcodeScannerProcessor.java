@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 
 import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.BarcodeGraphic;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 /**
  * Barcode Detector Demo.
@@ -55,14 +56,14 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
         super(context);
         barcodes = new ConcurrentHashMap<>();
 
-        init();
+        init(context);
     }
 
     public BarcodeScannerProcessor(Context context, BarcodeScannerProcessor processor) {
         super(context);
         barcodes = processor.barcodes;
 
-        init();
+        init(context);
     }
 
     public static void setBarcodeLifetime(long lifetime) {
@@ -91,16 +92,40 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
             Log.v(MANUAL_TESTING_LOG, "barcode display value: " + barcode.getDisplayValue());
             Log.v(MANUAL_TESTING_LOG, "barcode raw value: " + barcode.getRawValue());
 
+            switch (barcode.getFormat()) {
+                case Barcode.FORMAT_AZTEC -> Log.v(MANUAL_TESTING_LOG, "barcode type: Aztec");
+                case Barcode.FORMAT_CODABAR -> Log.v(MANUAL_TESTING_LOG, "barcode type: Codabar");
+                case Barcode.FORMAT_CODE_39 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Code 39");
+                case Barcode.FORMAT_CODE_93 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Code 93");
+                case Barcode.FORMAT_CODE_128 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Code 128");
+                case Barcode.FORMAT_DATA_MATRIX ->
+                    Log.v(MANUAL_TESTING_LOG, "barcode type: Data Matrix");
+                case Barcode.FORMAT_EAN_8 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Ean 8");
+                case Barcode.FORMAT_EAN_13 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Ean 13");
+                case Barcode.FORMAT_ITF -> Log.v(MANUAL_TESTING_LOG, "barcode type: ITF");
+                case Barcode.FORMAT_PDF417 -> Log.v(MANUAL_TESTING_LOG, "barcode type: PDF417");
+                case Barcode.FORMAT_QR_CODE -> Log.v(MANUAL_TESTING_LOG, "barcode type: QR Code");
+                case Barcode.FORMAT_UPC_A -> Log.v(MANUAL_TESTING_LOG, "barcode type: UPC-A");
+                case Barcode.FORMAT_UPC_E -> Log.v(MANUAL_TESTING_LOG, "barcode type: UPC-E");
+                default ->
+                    Log.v(MANUAL_TESTING_LOG, "barcode type: unknown (" + barcode.getFormat() + ")");
+            }
+
         }
     }
 
-    private void init() {
+    private void init(Context context) {
         BarcodeGraphic.PAUSED_TIMESTAMP = 0;
+
+        int[] supportedFormats = PreferenceUtils.getAcceptedBarcodeFormats(context);
 
         barcodeScanner = BarcodeScanning.getClient(
             // detection is much faster if we specify the format, but this is optional
             new BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(Barcode.FORMAT_PDF417)
+                // this is annoying, but the function signature is
+                //      .setBarcodeFormats(int, ...int)
+                // which means that we cannot just pass an int[]
+                .setBarcodeFormats(supportedFormats[0], supportedFormats)
                 .build()
         );
     }

@@ -37,6 +37,37 @@
         <item>2000 ms</item>
     </string-array>
 
+    <string-array name="barcode_format_vals">
+        <item>AZTEC</item>
+        <item>CODABAR</item>
+        <item>CODE_39</item>
+        <item>CODE_93</item>
+        <item>CODE_128</item>
+        <item>DATA_MATRIX</item>
+        <item>EAN_8</item>
+        <item>EAN_13</item>
+        <item>ITF</item>
+        <item>PDF_417</item>
+        <item>QR_CODE</item>
+        <item>UPC_A</item>
+        <item>UPC_E</item>
+    </string-array>
+    <string-array name="barcode_format_keys">
+        <item>AZTEC</item>
+        <item>Codabar</item>
+        <item>Code 39</item>
+        <item>Code 93</item>
+        <item>Code 128</item>
+        <item>Data Matrix</item>
+        <item>EAN-8</item>
+        <item>EAN-13</item>
+        <item>Interleaved 2 of 5</item>
+        <item>PDF-417</item>
+        <item>QR Code</item>
+        <item>UPC-A</item>
+        <item>UPC-E</item>
+    </string-array>
+
     <string-array name="loc_rows">
         <item>A</item>
         <item>B</item>
