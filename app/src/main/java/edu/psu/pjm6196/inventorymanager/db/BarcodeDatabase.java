@@ -75,7 +75,7 @@ public abstract class BarcodeDatabase extends RoomDatabase {
     }
 
     public static void update(Barcode barcode) {
-        // TODO: log(archive) previous barcode values
+        // TODO: log(archive) previous barcode values (to be done on database at update)
         (new Thread(() -> INSTANCE.barcodeDAO().update(barcode))).start();
     }
 
