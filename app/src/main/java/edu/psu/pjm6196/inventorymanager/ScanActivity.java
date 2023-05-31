@@ -52,8 +52,8 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     private ImageAnalysis imageAnalysis;
     private BarcodeScannerProcessor barcodeProcessor;
     private boolean requiresImageSourceUpdate;
-    private boolean scanning_is_paused;
-    private int scan_use_case;
+    private boolean scanningIsPaused;
+    private int scanUseCase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,24 +61,25 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
         setContentView(R.layout.activity_scan);
 
         Intent callingIntent = getIntent();
-        scan_use_case = callingIntent.getIntExtra("calling_activity_intent", 0);
+        scanUseCase = callingIntent.getIntExtra("calling_activity_intent", 0);
 
         // request camera permissions
         ActivityCompat.requestPermissions(this, CAMERA_PERMISSION, CAMERA_REQUEST_CODE);
 
         findViewById(R.id.btn_pause_scanning).setOnClickListener(v -> {
             FloatingActionButton btn = (FloatingActionButton) v;
-            if (scanning_is_paused) {
+            if (scanningIsPaused) {
                 bindCamera();
-                btn.setContentDescription( getResources().getString(R.string.scan_capture_bound) );
-                btn.setImageResource(R.drawable.ic_play);
+                btn.setContentDescription(getResources().getString(R.string.scan_capture_bound));
+//                btn.setImageResource(R.drawable.ic_pause);
             } else {
                 cameraProvider.unbindAll();
-                btn.setContentDescription( getResources().getString(R.string.scan_capture_unbound) );
-                btn.setImageResource(R.drawable.ic_pause);
+                btn.setContentDescription(getResources().getString(R.string.scan_capture_unbound));
+//                btn.setImageResource(R.drawable.ic_play);
             }
 
-            scanning_is_paused = !scanning_is_paused;
+            btn.setImageResource(scanningIsPaused ? R.drawable.ic_play : R.drawable.ic_pause);
+            scanningIsPaused = !scanningIsPaused;
         });
     }
 
@@ -108,14 +109,14 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     protected void onSaveInstanceState(@NonNull Bundle instanceState) {
         super.onSaveInstanceState(instanceState);
 
-        instanceState.putInt("calling_activity_intent", scan_use_case);
+        instanceState.putInt("calling_activity_intent", scanUseCase);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         super.onRestoreInstanceState(instanceState);
 
-        scan_use_case = instanceState.getInt("calling_activity_intent");
+        scanUseCase = instanceState.getInt("calling_activity_intent");
     }
 
     @Override
@@ -186,7 +187,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                 // but we should just handle multiples in case
 
                 if (
-                    CallingActivityIntent.isSingleBarcodeScanUseCase(this.scan_use_case) &&
+                    CallingActivityIntent.isSingleBarcodeScanUseCase(this.scanUseCase) &&
                         // use >= here just in case something bad happened and selected barcodes is > 1
                         barcodeProcessor.getToBeNumberOfBarcodesSelected(touchedBarcodes) > 1
                 ) {
@@ -291,11 +292,9 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
                     int width = imageProxy.getWidth();
                     int height = imageProxy.getHeight();
                     switch (imageProxy.getImageInfo().getRotationDegrees()) {
-                        case 0:
-                        case 180:
+                        case 0, 180 ->
                             graphicOverlay.setImageSourceInfo(width, height, isImageFlipped);
-                            break;
-                        default:
+                        default ->
                             //noinspection SuspiciousNameCombination
                             graphicOverlay.setImageSourceInfo(height, width, isImageFlipped);
                     }
@@ -313,7 +312,7 @@ public class ScanActivity extends CustomAppCompatActivity implements View.OnTouc
     private boolean returnResult() {
         return returnToCallingActivity(intent -> {
             // TODO: refactor to return ArrayList<String>
-            if (CallingActivityIntent.isSingleBarcodeScanUseCase(scan_use_case))
+            if (CallingActivityIntent.isSingleBarcodeScanUseCase(scanUseCase))
                 intent.putExtra("barcode_id", barcodeProcessor.getSelectedBarcodeId());
             else
                 intent.putStringArrayListExtra("barcode_ids", (ArrayList<String>) barcodeProcessor.getSelectedBarcodeIds());
