@@ -36,7 +36,7 @@ import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
 
-public class BarcodesListActivity extends CustomAppCompatActivity {
+public class BarcodesListActivity extends ActivityBase {
 
     private static final String TAG = "BarcodesListing";
     ActivityResultLauncher<Intent> getIds;

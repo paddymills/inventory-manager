@@ -19,7 +19,7 @@ import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.Material;
 
-public class AddBarcodeActivity extends CustomAppCompatActivity {
+public class AddBarcodeActivity extends ActivityBase {
 
     public static final int ADD_MODE = 0;
     public static final int EDIT_MODE = 1;
@@ -38,7 +38,7 @@ public class AddBarcodeActivity extends CustomAppCompatActivity {
             this.mode = intent.getIntExtra("mode", ADD_MODE);
 
         if (mode == EDIT_MODE) {
-            barcode = (Barcode) intent.getParcelableExtra("barcode");
+            barcode = intent.getParcelableExtra("barcode");
             setFormValues();
         }
 

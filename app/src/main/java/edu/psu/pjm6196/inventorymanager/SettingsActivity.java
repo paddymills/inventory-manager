@@ -17,7 +17,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import java.util.HashSet;
 
-public class SettingsActivity extends CustomAppCompatActivity {
+public class SettingsActivity extends ActivityBase {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

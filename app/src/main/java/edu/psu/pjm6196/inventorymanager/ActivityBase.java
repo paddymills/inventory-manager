@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-public abstract class CustomAppCompatActivity extends AppCompatActivity {
+public abstract class ActivityBase extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

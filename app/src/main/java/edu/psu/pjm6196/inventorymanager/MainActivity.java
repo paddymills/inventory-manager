@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 
-public class MainActivity extends CustomAppCompatActivity {
+public class MainActivity extends ActivityBase {
 
     public static final String TAG = "MainActivity";
 
@@ -28,6 +27,7 @@ public class MainActivity extends CustomAppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Move material intent and result
         ActivityResultLauncher<Intent> getId = registerForActivityResult(
             new ActivityResultContract<Intent, String>() {
                 @NonNull
@@ -50,6 +50,7 @@ public class MainActivity extends CustomAppCompatActivity {
                 handleMoveMaterial(result);
             });
 
+        // Find(query) material intent and result
         ActivityResultLauncher<Intent> findMaterials = registerForActivityResult(
             new ActivityResultContract<Intent, ArrayList<String>>() {
                 @NonNull
@@ -71,10 +72,37 @@ public class MainActivity extends CustomAppCompatActivity {
                 // TODO: launch BarcodeListActivity and filter it based on results
             });
 
+        // Take inventory intent and result
+        ActivityResultLauncher<Intent> takeInventory = registerForActivityResult(
+            new ActivityResultContract<Intent, ArrayList<String>>() {
+                @NonNull
+                @Override
+                public Intent createIntent(@NonNull Context context, Intent intent) {
+                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.TAKE_INVENTORY);
 
-        // TODO: implement taking inventory
-        findViewById(R.id.btn_inventory).setVisibility(View.GONE);
+                    return intent;
+                }
 
+                @Override
+                public ArrayList<String> parseResult(int i, @Nullable Intent intent) {
+                    assert intent != null;
+                    return intent.getStringArrayListExtra("barcode_ids");
+                }
+            },
+            result -> {
+                Log.d(TAG, "got result: " + result);
+
+                new AlertDialog.Builder(this)
+                    .setTitle("Barcodes Scanned")
+                    .setMessage(String.join("\n", result))
+                    .setPositiveButton("Ok", (dialog, i) -> {
+                    })
+                    .create()
+                    .show();
+                // TODO: display list of IDs (maybe re-use BarcodeListActivity with checkboxes?)
+            });
+
+        // button activity launchers
         findViewById(R.id.btn_list)
             .setOnClickListener(
                 v -> startActivity(new Intent(this, BarcodesListActivity.class)));
@@ -84,6 +112,9 @@ public class MainActivity extends CustomAppCompatActivity {
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(
                 v -> findMaterials.launch(new Intent(this, ScanActivity.class)));
+        findViewById(R.id.btn_inventory)
+            .setOnClickListener(
+                v -> takeInventory.launch(new Intent(this, TakeInventoryActivity.class)));
     }
 
     private void handleMoveMaterial(String id_hash) {
