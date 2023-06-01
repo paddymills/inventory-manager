@@ -61,6 +61,8 @@ public class BarcodesListActivity extends ActivityBase {
             filtered = savedInstanceState.getBoolean("filtered", false);
             // TODO: restore filtered by specific listener
             filterMaterial(null);
+
+            ArrayList<String> ids = savedInstanceState.getStringArrayList("barcode_ids");
         }
 
         createActivityResultContracts();
