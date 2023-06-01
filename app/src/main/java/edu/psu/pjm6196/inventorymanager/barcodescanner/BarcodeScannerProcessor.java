@@ -172,6 +172,10 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
         return barcodes.values().stream().filter(BarcodeGraphic::isSelected);
     }
 
+    public List<String> getScannedBarcodeIds() {
+        return barcodes.values().stream().map(BarcodeGraphic::toString).collect(Collectors.toList());
+    }
+
     public int getNumberOfBarcodesSelected() {
         return (int) getSelectedBarcodes().count();
     }
