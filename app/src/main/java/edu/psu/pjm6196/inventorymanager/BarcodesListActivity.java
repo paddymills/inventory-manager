@@ -42,7 +42,9 @@ public class BarcodesListActivity extends ActivityBase {
     ActivityResultLauncher<Intent> getIds;
     ActivityResultLauncher<Intent> addMaterial;
     private BarcodeViewModel barcodeViewModel;
+    // TODO: replace with newFiltered
     private boolean filtered = false;
+    private ListFilterListener newFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +63,14 @@ public class BarcodesListActivity extends ActivityBase {
             filtered = savedInstanceState.getBoolean("filtered", false);
             // TODO: restore filtered by specific listener
             filterMaterial(null);
+        }
 
-            ArrayList<String> ids = savedInstanceState.getStringArrayList("barcode_ids");
+        Intent called = getIntent();
+        if ( called != null && called.hasExtra("barcode_ids") ) {
+            ArrayList<String> ids = called.getStringArrayListExtra("barcode_ids");
+            Log.d(TAG, "Received barcode ids");
+            filtered = true;
+            filterMaterial(model -> model.filterByIdHashBarcodes(filtered, ids));
         }
 
         createActivityResultContracts();
@@ -120,6 +128,7 @@ public class BarcodesListActivity extends ActivityBase {
     }
 
     private void createActivityResultContracts() {
+        // TODO: refactor this so nothing returns to MainActivity to do work
         getIds = registerForActivityResult(
             new ActivityResultContract<Intent, ArrayList<String>>() {
                 @NonNull

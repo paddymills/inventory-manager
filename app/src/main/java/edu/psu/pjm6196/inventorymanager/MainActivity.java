@@ -85,7 +85,10 @@ public class MainActivity extends ActivityBase {
 
                 @Override
                 public ArrayList<String> parseResult(int i, @Nullable Intent intent) {
-                    assert intent != null;
+                    if ( intent == null )
+                        return new ArrayList<>();
+
+//                    assert intent != null;
                     return intent.getStringArrayListExtra("barcode_ids");
                 }
             },
