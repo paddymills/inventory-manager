@@ -50,6 +50,7 @@ public abstract class BarcodeDatabase extends RoomDatabase {
     }
 
     private static void createBarcodeTable() {
+        // TODO: remove test data and add a web request to pull data from database
         for (int i = 0; i < TestData.ids.length; i++)
             insert(new Barcode(0, TestData.ids[i], TestData.materials[i]));
     }
