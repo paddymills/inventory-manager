@@ -57,21 +57,22 @@ public class BarcodesListActivity extends ActivityBase {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
-        barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
-
-        if (savedInstanceState != null) {
-            filtered = savedInstanceState.getBoolean("filtered", false);
-            // TODO: restore filtered by specific listener
-            filterMaterial(null);
-        }
 
         Intent called = getIntent();
-        if ( called != null && called.hasExtra("barcode_ids") ) {
+        if (called != null && called.hasExtra("barcode_ids")) {
             ArrayList<String> ids = called.getStringArrayListExtra("barcode_ids");
-            Log.d(TAG, "Received barcode ids");
+            Log.d(TAG, "Received barcode ids: " + ids.toString());
             filtered = true;
-            filterMaterial(model -> model.filterByIdHashBarcodes(filtered, ids));
+
+            barcodeViewModel.setFilter(dao -> dao.getByIdHashes(ids));
         }
+        barcodeViewModel.getBarcodes().observe(this, adapter::setBarcodes);
+
+//        if (savedInstanceState != null) {
+//            filtered = savedInstanceState.getBoolean("filtered", false);
+//            // TODO: restore filtered by specific listener
+//            filterMaterial(null);
+//        }
 
         createActivityResultContracts();
 
@@ -198,7 +199,7 @@ public class BarcodesListActivity extends ActivityBase {
             listener.setFilter(barcodeViewModel);
 
 
-        barcodeViewModel.getAllBarcodes().observe(this, adapter::setBarcodes);
+        barcodeViewModel.getBarcodes().observe(this, adapter::setBarcodes);
 
         // set icon
         Toolbar menu = findViewById(R.id.toolbar);
