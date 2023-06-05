@@ -72,39 +72,6 @@ public class MainActivity extends ActivityBase {
                 // TODO: launch BarcodeListActivity and filter it based on results
             });
 
-        // Take inventory intent and result
-        ActivityResultLauncher<Intent> takeInventory = registerForActivityResult(
-            new ActivityResultContract<Intent, ArrayList<String>>() {
-                @NonNull
-                @Override
-                public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.TAKE_INVENTORY);
-
-                    return intent;
-                }
-
-                @Override
-                public ArrayList<String> parseResult(int i, @Nullable Intent intent) {
-                    if ( intent == null )
-                        return new ArrayList<>();
-
-//                    assert intent != null;
-                    return intent.getStringArrayListExtra("barcode_ids");
-                }
-            },
-            result -> {
-                Log.d(TAG, "got result: " + result);
-
-                new AlertDialog.Builder(this)
-                    .setTitle("Barcodes Scanned")
-                    .setMessage(String.join("\n", result))
-                    .setPositiveButton("Ok", (dialog, i) -> {
-                    })
-                    .create()
-                    .show();
-                // TODO: display list of IDs (maybe re-use BarcodeListActivity with checkboxes?)
-            });
-
         // button activity launchers
         findViewById(R.id.btn_list)
             .setOnClickListener(
@@ -117,7 +84,7 @@ public class MainActivity extends ActivityBase {
                 v -> findMaterials.launch(new Intent(this, ScanActivity.class)));
         findViewById(R.id.btn_inventory)
             .setOnClickListener(
-                v -> takeInventory.launch(new Intent(this, TakeInventoryActivity.class)));
+                v -> startActivity(new Intent(this, TakeInventoryActivity.class)));
     }
 
     private void handleMoveMaterial(String id_hash) {
