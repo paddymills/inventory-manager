@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "edu.psu.pjm6196.inventorymanager"
-        minSdk 27
+        minSdk 33
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -23,8 +23,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_14
-        targetCompatibility JavaVersion.VERSION_14
+        sourceCompatibility JavaVersion.VERSION_16
+        targetCompatibility JavaVersion.VERSION_16
+    }
+    buildFeatures {
+        viewBinding true
     }
 }
 
@@ -38,6 +41,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.navigation:navigation-runtime:2.5.3'
     implementation 'androidx.fragment:fragment:1.5.7'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

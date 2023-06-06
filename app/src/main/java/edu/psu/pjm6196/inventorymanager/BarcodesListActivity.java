@@ -35,16 +35,14 @@ import java.util.List;
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
+import edu.psu.pjm6196.inventorymanager.utils.Filters;
 
 public class BarcodesListActivity extends ActivityBase {
 
     private static final String TAG = "BarcodesListing";
-    ActivityResultLauncher<Intent> getIds;
-    ActivityResultLauncher<Intent> addMaterial;
+    private ActivityResultLauncher<Intent> getIds;
+    private ActivityResultLauncher<Intent> addMaterial;
     private BarcodeViewModel barcodeViewModel;
-    // TODO: replace with newFiltered
-    private boolean filtered = false;
-    private ListFilterListener newFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,25 +51,24 @@ public class BarcodesListActivity extends ActivityBase {
 
         RecyclerView recyclerView = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
-        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
+        // allow BarcodeViewModel to bind observer whenever LiveData is queried from database
+        barcodeViewModel.setLiveDataObserver(data -> data.observe(this, adapter::setBarcodes));
+        barcodeViewModel.loadFilter(new Filters.ByMaterial("50/50W-0010"));
 
         Intent called = getIntent();
         if (called != null && called.hasExtra("barcode_ids")) {
             ArrayList<String> ids = called.getStringArrayListExtra("barcode_ids");
             Log.d(TAG, "Received barcode ids: " + ids.toString());
-            filtered = true;
 
-            barcodeViewModel.setFilter(dao -> dao.getByIdHashes(ids));
+            barcodeViewModel.setFilter(new Filters.ByIdHashes(ids));
         }
-        barcodeViewModel.getBarcodes().observe(this, adapter::setBarcodes);
 
+        // TODO: restore filtered by specific listener
 //        if (savedInstanceState != null) {
 //            filtered = savedInstanceState.getBoolean("filtered", false);
-//            // TODO: restore filtered by specific listener
-//            filterMaterial(null);
 //        }
 
         createActivityResultContracts();
@@ -88,10 +85,7 @@ public class BarcodesListActivity extends ActivityBase {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.list_barcodes_menu, menu);
 
-        if (filtered)
-            menu.findItem(R.id.menu_filter).setIcon(R.drawable.ic_nofilter);
-        else
-            menu.findItem(R.id.menu_filter).setIcon(R.drawable.ic_filter);
+        setFilterIcon(menu.findItem(R.id.menu_filter));
 
         return true;
     }
@@ -99,10 +93,19 @@ public class BarcodesListActivity extends ActivityBase {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_filter) {
-            // toggle filtering
-            filtered = !filtered;
 
-            return filterMaterial(null);
+            // TODO: filters dialog
+            try {
+                barcodeViewModel.toggleFilter();
+
+                setFilterIcon();
+                Log.d(TAG, "Default filters " + (barcodeViewModel.isFiltered ? "set" : "removed"));
+            } catch (BarcodeViewModel.NoFilterSetException e) {
+                Log.e(TAG, "Attempted to show a filter when none was loaded");
+                Toast.makeText(this, "No filter loaded to show", Toast.LENGTH_SHORT).show();
+            }
+
+            return true;
         }
 
         if (item.getItemId() == R.id.menu_add) {
@@ -116,16 +119,14 @@ public class BarcodesListActivity extends ActivityBase {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle instanceState) {
         super.onSaveInstanceState(instanceState);
-        instanceState.putBoolean("filtered", filtered);
+        instanceState.putBoolean("filtered", barcodeViewModel.isFiltered);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle instanceState) {
         super.onRestoreInstanceState(instanceState);
 
-        filtered = instanceState.getBoolean("filtered", false);
-        if (filtered)
-            filterMaterial(null);
+//        filtered = instanceState.getBoolean("filtered", false);
     }
 
     private void createActivityResultContracts() {
@@ -152,8 +153,7 @@ public class BarcodesListActivity extends ActivityBase {
                 Log.d(TAG, "Received ids: " + result);
                 if (result != null) {
                     // TODO: filter list to either show barcode or show all with a particular attribute of scanned_barcode
-                    filtered = true;
-                    filterMaterial(model -> model.filterByIdHashBarcodes(filtered, result));
+                    barcodeViewModel.setFilter(new Filters.ByIdHashes(result));
                 }
             });
         addMaterial = registerForActivityResult(
@@ -186,38 +186,36 @@ public class BarcodesListActivity extends ActivityBase {
         barcodeDisplay.show(getSupportFragmentManager(), "barcodeDisplay");
     }
 
-    public boolean filterMaterial(ListFilterListener listener) {
+    public void filterList(Filters.FilterBase filter) {
         // set recycler view to have filtered/non-filtered list
         RecyclerView recycler = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
         recycler.setAdapter(adapter);
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
 
-        if (listener == null)
-            barcodeViewModel.filterBarcodes(filtered);
-        else
-            listener.setFilter(barcodeViewModel);
-
-
-        barcodeViewModel.getBarcodes().observe(this, adapter::setBarcodes);
+        barcodeViewModel.setFilter(filter);
 
         // set icon
-        Toolbar menu = findViewById(R.id.toolbar);
-        MenuItem menu_item = menu.getMenu().findItem(R.id.menu_filter);
-        if (filtered)
-            menu_item.setIcon(R.drawable.ic_nofilter);
-        else
-            menu_item.setIcon(R.drawable.ic_filter);
+        setFilterIcon();
 
         // display toast of what happened
-        String message = filtered ? "Barcodes filtered" : "Filter removed";
+        String message = barcodeViewModel.isFiltered ? "Barcodes filtered" : "Filter removed";
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-
-        return true;
     }
 
-    public interface ListFilterListener {
-        void setFilter(BarcodeViewModel model);
+    private void setFilterIcon(MenuItem filterButton) {
+        if (barcodeViewModel.isFiltered)
+            filterButton.setIcon(R.drawable.ic_nofilter);
+        else
+            filterButton.setIcon(R.drawable.ic_filter);
+    }
+
+    private void setFilterIcon() {
+        MenuItem filterButton = ((Toolbar) findViewById(R.id.toolbar))
+            .getMenu()
+            .findItem(R.id.menu_filter);
+
+        setFilterIcon(filterButton);
     }
 
     public static class BarcodeDisplayFragment extends DialogFragment {
@@ -228,7 +226,7 @@ public class BarcodesListActivity extends ActivityBase {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
             assert getArguments() != null;
-            Barcode barcode = getArguments().getParcelable("barcode");
+            Barcode barcode = getArguments().getParcelable("barcode", Barcode.class);
 
             ActivityResultLauncher<Intent> editMaterial = registerForActivityResult(
                 new ActivityResultContract<Intent, Boolean>() {
@@ -332,6 +330,7 @@ public class BarcodesListActivity extends ActivityBase {
         void setBarcodes(List<Barcode> barcodes) {
             this.barcodes = barcodes;
             notifyDataSetChanged();
+            Log.d("BarcodesListAdapter", "Barcodes list set");
         }
 
         class BarcodeViewHolder extends RecyclerView.ViewHolder {
