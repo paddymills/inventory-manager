@@ -51,6 +51,7 @@ public class BarcodesListActivity extends ActivityBase {
 
         RecyclerView recyclerView = findViewById(R.id.listBarcodes);
         BarcodeListAdapter adapter = new BarcodeListAdapter(this);
+        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         barcodeViewModel = new ViewModelProvider(this).get(BarcodeViewModel.class);
