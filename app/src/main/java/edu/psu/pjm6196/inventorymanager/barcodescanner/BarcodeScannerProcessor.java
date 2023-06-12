@@ -31,9 +31,11 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,27 +91,70 @@ public class BarcodeScannerProcessor extends VisionProcessorBase<List<Barcode>> 
                     MANUAL_TESTING_LOG,
                     String.format("Corner point is located at: x = %d, y = %d", point.x, point.y));
             }
+
+            // new corner logging view
+            ArrayList<Point> pts = new ArrayList<>(Arrays.asList(barcode.getCornerPoints()));
+            pts.sort((a, b) -> {
+                // sort by Y-values and then X-values
+
+                // comparator returns
+                //  -1 -> <
+                //   0 -> ==
+                //   1 -> >
+                if (a.y == b.y)
+                    return a.x - b.x;
+
+                return a.y - b.y;
+            });
+
+            String bcodeText = barcode.getDisplayValue();
+            if (bcodeText == null) bcodeText = "";
+
+            int max_x = (int) Math.log10(pts.stream().mapToInt(p -> p.x).max().getAsInt()) + 1;
+            int max_y = (int) Math.log10(pts.stream().mapToInt(p -> p.y).max().getAsInt()) + 1;
+
+            StringBuilder val = new StringBuilder();
+            Consumer<Point> padded_pair = (p) -> {
+                val.append(String.format("(%" + max_x + "d,%" + max_y + "d)", p.x, p.y));
+            };
+
+            String type = switch (barcode.getFormat()) {
+                case Barcode.FORMAT_AZTEC -> "Aztec";
+                case Barcode.FORMAT_CODABAR -> "Codabar";
+                case Barcode.FORMAT_CODE_39 -> "Code 39";
+                case Barcode.FORMAT_CODE_93 -> "Code 93";
+                case Barcode.FORMAT_CODE_128 -> "Code 128";
+                case Barcode.FORMAT_DATA_MATRIX -> "Data Matrix";
+                case Barcode.FORMAT_EAN_8 -> "EAN-8";
+                case Barcode.FORMAT_EAN_13 -> "EAN-13";
+                case Barcode.FORMAT_ITF -> "ITF";
+                case Barcode.FORMAT_PDF417 -> "PDF417";
+                case Barcode.FORMAT_QR_CODE -> "QR Code";
+                case Barcode.FORMAT_UPC_A -> "UPC-A";
+                case Barcode.FORMAT_UPC_E -> "UPC-E";
+                default -> "unknown (" + barcode.getFormat() + ")";
+            };
+
+            padded_pair.accept(pts.get(0));
+            val.append("----");
+            padded_pair.accept(pts.get(1));
+            val.append(String.format("\n|%" + (bcodeText.length() + 4) + "s|", type));
+            val.append(String.format("\n|%" + (bcodeText.length() + 4) + "s|", "-".repeat(bcodeText.length())));
+            val.append(String.format("\n|%" + (bcodeText.length() + 4) + "s|\n", bcodeText));
+            padded_pair.accept(pts.get(2));
+            val.append("----");
+            padded_pair.accept(pts.get(3));
+
+//            String val = String.format("(%3d,%3d)----(%3d,%3d)\n(%3d,%3d)----(%3d,%3d)",
+//                pts.get(0).x, pts.get(0).y,
+//                pts.get(1).x, pts.get(1).y,
+//                pts.get(2).x, pts.get(2).y,
+//                pts.get(3).x, pts.get(3).y
+//            );
+            Log.v("NewBarcodeLog", val.toString());
+
             Log.v(MANUAL_TESTING_LOG, "barcode display value: " + barcode.getDisplayValue());
             Log.v(MANUAL_TESTING_LOG, "barcode raw value: " + barcode.getRawValue());
-
-            switch (barcode.getFormat()) {
-                case Barcode.FORMAT_AZTEC -> Log.v(MANUAL_TESTING_LOG, "barcode type: Aztec");
-                case Barcode.FORMAT_CODABAR -> Log.v(MANUAL_TESTING_LOG, "barcode type: Codabar");
-                case Barcode.FORMAT_CODE_39 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Code 39");
-                case Barcode.FORMAT_CODE_93 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Code 93");
-                case Barcode.FORMAT_CODE_128 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Code 128");
-                case Barcode.FORMAT_DATA_MATRIX ->
-                    Log.v(MANUAL_TESTING_LOG, "barcode type: Data Matrix");
-                case Barcode.FORMAT_EAN_8 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Ean 8");
-                case Barcode.FORMAT_EAN_13 -> Log.v(MANUAL_TESTING_LOG, "barcode type: Ean 13");
-                case Barcode.FORMAT_ITF -> Log.v(MANUAL_TESTING_LOG, "barcode type: ITF");
-                case Barcode.FORMAT_PDF417 -> Log.v(MANUAL_TESTING_LOG, "barcode type: PDF417");
-                case Barcode.FORMAT_QR_CODE -> Log.v(MANUAL_TESTING_LOG, "barcode type: QR Code");
-                case Barcode.FORMAT_UPC_A -> Log.v(MANUAL_TESTING_LOG, "barcode type: UPC-A");
-                case Barcode.FORMAT_UPC_E -> Log.v(MANUAL_TESTING_LOG, "barcode type: UPC-E");
-                default ->
-                    Log.v(MANUAL_TESTING_LOG, "barcode type: unknown (" + barcode.getFormat() + ")");
-            }
 
         }
     }
