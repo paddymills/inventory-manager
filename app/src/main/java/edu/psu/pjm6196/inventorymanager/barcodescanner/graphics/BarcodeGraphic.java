@@ -28,6 +28,8 @@ import androidx.annotation.NonNull;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
 
+import edu.psu.pjm6196.inventorymanager.utils.Quadrilateral;
+
 /**
  * Graphic instance for rendering Barcode position and content information in an overlay view.
  */
@@ -145,6 +147,19 @@ public class BarcodeGraphic extends Graphic {
         return rect;
     }
 
+    private Quadrilateral calculateQuad() {
+        Quadrilateral quad = new Quadrilateral(barcode);
+
+        quad.translate(p -> {
+            p.x = (int) translateX(p.x);
+            p.y = (int) translateY(p.y);
+
+            return p;
+        });
+
+        return quad;
+    }
+
     private RectF getTextBackgroundRect(RectF rect) {
         float lineHeight = TEXT_SIZE + (2 * STROKE_WIDTH);
         float textWidth = getBarcodePaint().measureText(barcode.getDisplayValue());
@@ -168,9 +183,11 @@ public class BarcodeGraphic extends Graphic {
 
         // calculate barcode rectangle
         RectF rect = calculateRect();
+        Quadrilateral quad = calculateQuad();
 
         // draw rectangle
-        canvas.drawRect(rect, getRectPaint());
+//        canvas.drawRect(rect, getRectPaint());
+        quad.draw(canvas, getRectPaint());
 
         // Draws other object info.
         canvas.drawRect(getTextBackgroundRect(rect), getLabelPaint());
