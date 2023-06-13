@@ -37,6 +37,13 @@
             app:key="lifetime_duration"
             app:title="@string/lifetime_duration_title"
             app:summary="@string/lifetime_duration_summary" />
+
+        <MultiSelectListPreference
+            app:entries="@array/barcode_format_keys"
+            app:entryValues="@array/barcode_format_vals"
+            app:key="accepted_barcode_formats"
+            app:summary="Formats the scanner will try to find. Limiting this list can help the scanner perform better."
+            app:title="Accepted Barcode Formats" />
     </PreferenceCategory>
 
     <PreferenceCategory

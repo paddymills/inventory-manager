@@ -11,12 +11,17 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "barcodes")
 public class Barcode implements Parcelable {
 
-    public Barcode(int id, String id_hash, Material material) {
-        this.id = id;
-        this.id_hash = id_hash;
-        this.material = material;
-    }
+    public static final Parcelable.Creator<Barcode> CREATOR = new Parcelable.Creator<>() {
+        @Override
+        public Barcode createFromParcel(Parcel source) {
+            return new Barcode(source);
+        }
 
+        @Override
+        public Barcode[] newArray(int size) {
+            return new Barcode[size];
+        }
+    };
     @PrimaryKey(autoGenerate = true)
     public int id;
 
@@ -25,6 +30,18 @@ public class Barcode implements Parcelable {
 
     @Embedded
     public Material material;
+
+    public Barcode(int id, String id_hash, Material material) {
+        this.id = id;
+        this.id_hash = id_hash;
+        this.material = material;
+    }
+
+    protected Barcode(Parcel in) {
+        this.id = in.readInt();
+        this.id_hash = in.readString();
+        this.material = in.readParcelable(Material.class.getClassLoader(), Material.class);
+    }
 
     public String title() {
         return this.id + ": " + this.id_hash;
@@ -45,24 +62,6 @@ public class Barcode implements Parcelable {
     public void readFromParcel(Parcel source) {
         this.id = source.readInt();
         this.id_hash = source.readString();
-        this.material = source.readParcelable(Material.class.getClassLoader());
+        this.material = source.readParcelable(Material.class.getClassLoader(), Material.class);
     }
-
-    protected Barcode(Parcel in) {
-        this.id = in.readInt();
-        this.id_hash = in.readString();
-        this.material = in.readParcelable(Material.class.getClassLoader());
-    }
-
-    public static final Parcelable.Creator<Barcode> CREATOR = new Parcelable.Creator<Barcode>() {
-        @Override
-        public Barcode createFromParcel(Parcel source) {
-            return new Barcode(source);
-        }
-
-        @Override
-        public Barcode[] newArray(int size) {
-            return new Barcode[size];
-        }
-    };
 }

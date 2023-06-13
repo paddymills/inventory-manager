@@ -65,8 +65,12 @@ import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.TemperatureMonitor;
  */
 public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
-  protected static final String MANUAL_TESTING_LOG = "LogTagForTest";
+  protected static final String MANUAL_TESTING_LOG = "VisionProcessorBaseTesting";
   private static final String TAG = "VisionProcessorBase";
+
+  protected static final String DEBUG_GRAPHIC_KEY = "INFO_GRAPHIC";
+  protected static final String IMAGE_GRAPHIC_KEY = "IMAGE_GRAPHIC";
+
 
   private final ActivityManager activityManager;
   private final Timer fpsTimer = new Timer();
@@ -335,7 +339,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
     // some of this code was adapted from the blog post: https://medium.com/swlh/introduction-to-androids-camerax-with-java-ca384c522c5
               if (originalCameraImage != null) {
                 graphicOverlay.add(
-                    "IMAGE_GRAPHIC",
+                    IMAGE_GRAPHIC_KEY,
                     new CameraImageGraphic(graphicOverlay, originalCameraImage)
                 );
               }
@@ -343,7 +347,7 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
               VisionProcessorBase.this.onSuccess(results, graphicOverlay);
               if (PreferenceUtils.showDetectionInfo(graphicOverlay.getContext())) {
                 graphicOverlay.add(
-                    "INFO_GRAPHIC",
+                    DEBUG_GRAPHIC_KEY,
                     new InferenceInfoGraphic(
                         graphicOverlay,
                         currentFrameLatencyMs,
