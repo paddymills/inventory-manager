@@ -30,14 +30,6 @@
             app:title="Live Preview"
             app:summary="@string/enable_preview_summary" />
 
-        <ListPreference
-            app:defaultValue="@string/lifetime_duration_default"
-            app:entries="@array/camera_lifetime_keys"
-            app:entryValues="@array/camera_lifetime_vals"
-            app:key="lifetime_duration"
-            app:title="@string/lifetime_duration_title"
-            app:summary="@string/lifetime_duration_summary" />
-
         <MultiSelectListPreference
             app:entries="@array/barcode_format_keys"
             app:entryValues="@array/barcode_format_vals"

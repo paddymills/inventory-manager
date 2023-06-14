@@ -30,8 +30,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.BarcodeScannerProcessor;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.processor.BarcodeScannerProcessor;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.CameraXViewModel;
 import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
@@ -74,9 +74,6 @@ public abstract class ScanActivityBase extends ActivityBase implements View.OnTo
     public void onResume() {
         super.onResume();
         Log.d(TAG, "resumed...");
-
-        // set barcode scan lifetime
-        BarcodeScannerProcessor.setBarcodeLifetime(PreferenceUtils.getBarcodeLifetime(this));
 
         bindCamera();
     }

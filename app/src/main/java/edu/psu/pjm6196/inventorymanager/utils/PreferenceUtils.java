@@ -44,14 +44,6 @@ public class PreferenceUtils {
         return prefs.getBoolean("debug_mode", false);
     }
 
-    public static int getBarcodeLifetime(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        return Integer.parseInt(
-            prefs.getString("lifetime_duration", String.valueOf(DEFAULT_LIFETIME))
-        );
-    }
-
     public static int[] getAcceptedBarcodeFormats(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
