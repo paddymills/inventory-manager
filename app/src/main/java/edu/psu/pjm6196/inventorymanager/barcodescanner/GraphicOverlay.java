@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
+package edu.psu.pjm6196.inventorymanager.barcodescanner;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.google.common.base.Preconditions;
 
 import java.util.HashMap;
+
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.BarcodeGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.CameraImageGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.Graphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.TelemetryInfoGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.TransformationHandler;
+import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 /**
  * A view which renders a series of custom graphics to be overlayed on top of an associated preview
@@ -40,13 +48,14 @@ import java.util.HashMap;
  * coordinates for the graphics that are drawn:
  *
  * <ol>
- *   <li>{@link Graphic#scale(float)} adjusts the size of the supplied value from the image scale to
+ *   <li>{@link GraphicOverlay#scale(float)} adjusts the size of the supplied value from the image scale to
  *       the view scale.
- *   <li>{@link Graphic#translateX(float)} and {@link Graphic#translateY(float)} adjust the
+ *   <li>{@link GraphicOverlay#translateX(float)} and {@link GraphicOverlay#translateY(float)} adjust the
  *       coordinate from the image's coordinate system to the view coordinate system.
  * </ol>
  */
-public class GraphicOverlay extends View {
+public class GraphicOverlay extends View implements TransformationHandler {
+    private static final String TAG = "GraphicOverlay";
     private final Object lock = new Object();
     private final HashMap<String, Graphic> graphics = new HashMap<>();
     // Matrix for transforming from image coordinates to overlay view coordinates.
@@ -65,6 +74,9 @@ public class GraphicOverlay extends View {
     private float postScaleHeightOffset;
     private boolean isImageFlipped;
     private boolean needUpdateTransformation = true;
+    private TelemetryInfoGraphic telemetry;
+    private CameraImageGraphic cameraImage;
+    private ScannedBarcodeHandler listener;
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -73,6 +85,13 @@ public class GraphicOverlay extends View {
                 needUpdateTransformation = true);
     }
 
+    public void setDataListener(ScannedBarcodeHandler listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * @return a {@link Matrix} for transforming from image coordinates to overlay view coordinates.
+     */
     public Matrix getTransformationMatrix() {
         return this.transformationMatrix;
     }
@@ -113,13 +132,23 @@ public class GraphicOverlay extends View {
     }
 
     /**
-     * Removes a graphic from the overlay.
+     * Adds a telemetry graphic to the overlay.
      */
-    public void remove(String key) {
+    public void updateImage(CameraImageGraphic image) {
         synchronized (lock) {
-            graphics.remove(key);
+            this.cameraImage = image;
+            postInvalidate();
         }
-        postInvalidate();
+    }
+
+    /**
+     * Adds a telemetry graphic to the overlay.
+     */
+    public void updateTelemetry(TelemetryInfoGraphic telemetry) {
+        synchronized (lock) {
+            this.telemetry = telemetry;
+            postInvalidate();
+        }
     }
 
     /**
@@ -181,6 +210,34 @@ public class GraphicOverlay extends View {
     }
 
     /**
+     * Adjusts the supplied value from the image scale to the view scale.
+     */
+    @Override
+    public float scale(float imagePixel) {
+        return imagePixel * getScaleFactor();
+    }
+
+    /**
+     * @return the x coordinate adjusted from the image's coordinate system to the view coordinate system.
+     */
+    @Override
+    public float translateX(float x) {
+        if (isImageFlipped()) {
+            return getWidth() - (scale(x) - getPostScaleWidthOffset());
+        } else {
+            return scale(x) - getPostScaleWidthOffset();
+        }
+    }
+
+    /**
+     * @return the y coordinate adjusted from the image's coordinate system to the view coordinate system.
+     */
+    @Override
+    public float translateY(float y) {
+        return scale(y) - getPostScaleHeightOffset();
+    }
+
+    /**
      * Draws the overlay with its associated graphic objects.
      */
     @Override
@@ -190,11 +247,22 @@ public class GraphicOverlay extends View {
         synchronized (lock) {
             updateTransformationIfNeeded();
 
-            for (Graphic graphic : graphics.values()) {
-                graphic.draw(canvas);
+            if (PreferenceUtils.showDetectionInfo(this.getContext()))
+                telemetry.draw(canvas, this);
+
+            if (cameraImage != null)
+                cameraImage.draw(canvas, this);
+
+            if (listener != null) {
+                for (BarcodeGraphic graphic : listener.getBarcodesToRender()) {
+                    Log.v(TAG, "Drawing barcode: " + graphic.getLabel());
+                    graphic.draw(canvas, this);
+                }
             }
         }
     }
+
+    // TODO: OnTouchListener
 
     @Override
     public boolean performClick() {

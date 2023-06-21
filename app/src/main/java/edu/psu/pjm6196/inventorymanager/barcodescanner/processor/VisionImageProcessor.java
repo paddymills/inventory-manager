@@ -24,7 +24,7 @@ import com.google.mlkit.common.MlKitException;
 
 import java.nio.ByteBuffer;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.FrameMetadata;
 
 /**

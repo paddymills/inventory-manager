@@ -7,67 +7,55 @@ import android.graphics.Point;
 
 import com.google.mlkit.vision.barcode.common.Barcode;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class Quadrilateral {
-    private Point topLeft;
-    private Point topRight;
-    private Point bottomLeft;
-    private Point bottomRight;
-
-    public Quadrilateral(Point[] points) {
-        assert points.length == 4;
-
-        ArrayList<Point> pts = new ArrayList<>(Arrays.asList(points));
-        pts.sort((a, b) -> {
-            // sort by Y-values and then X-values
-
-            // comparator returns
-            //  -1 -> <
-            //   0 -> ==
-            //   1 -> >
-            if (a.y == b.y)
-                return a.x - b.x;
-
-            return a.y - b.y;
-        });
-
-        setPoints(pts.get(0), pts.get(1), pts.get(2), pts.get(3));
-    }
+    private final Line top;
+    private final Line bottom;
+    private final Line left;
+    private final Line right;
 
     public Quadrilateral(Barcode barcode) {
-        this(Objects.requireNonNull(barcode.getCornerPoints()));
+        Point[] pts = Objects.requireNonNull(barcode.getCornerPoints());
+
+        top = new Line(pts[0], pts[1]);
+        bottom = new Line(pts[3], pts[2]);
+        left = new Line(pts[3], pts[0]);
+        right = new Line(pts[2], pts[1]);
     }
 
-    public void setPoints(Point tl, Point tr, Point bl, Point br) {
-        topLeft = tl;
-        topRight = tr;
-        bottomLeft = bl;
-        bottomRight = br;
+    public Point getAnchor() {
+        return top.start;
     }
 
     public void draw(Canvas canvas, Paint paint) {
-        canvas.drawLine(topLeft.x, topLeft.y, topRight.x, topRight.y, paint);
-        canvas.drawLine(topRight.x, topRight.y, bottomRight.x, bottomRight.y, paint);
-        canvas.drawLine(bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y, paint);
-        canvas.drawLine(bottomLeft.x, bottomLeft.y, topLeft.x, topLeft.y, paint);
+        top.draw(canvas, paint);
+        bottom.draw(canvas, paint);
+        left.draw(canvas, paint);
+        right.draw(canvas, paint);
     }
 
     public void drawTopText(Canvas canvas, Paint paint, String text) {
         Path path = new Path();
-        path.moveTo(topLeft.x, topLeft.y);
-        path.lineTo(topRight.x, topRight.y);
+        path.moveTo(top.start.x, top.start.y);
+        path.lineTo(top.end.x, top.end.y);
 
         canvas.drawTextOnPath(text, path, 0, 0, paint);
     }
 
+    public boolean isPointWithin(Point point) {
+        return
+            top.isAboveLine(point) &&
+                bottom.isBellowLine(point) &&
+                left.isLeftOfLine(point) &&
+                right.isRigthOfLine(point);
+    }
+
     public void translate(TranslateListener listener) {
-        topLeft = listener.translatePoint(topLeft);
-        topRight = listener.translatePoint(topRight);
-        bottomLeft = listener.translatePoint(bottomLeft);
-        bottomRight = listener.translatePoint(bottomRight);
+        top.translate(listener);
+        bottom.translate(listener);
+        left.translate(listener);
+        right.translate(listener);
     }
 
     public interface TranslateListener {

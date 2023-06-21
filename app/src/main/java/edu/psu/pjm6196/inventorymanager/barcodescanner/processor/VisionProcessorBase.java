@@ -47,9 +47,7 @@ import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.CameraImageGraphic;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay;
-import edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.TelemetryInfoGraphic;
+import edu.psu.pjm6196.inventorymanager.barcodescanner.GraphicOverlay;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.BitmapUtils;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.FrameMetadata;
 import edu.psu.pjm6196.inventorymanager.barcodescanner.utils.ScopedExecutor;
@@ -58,16 +56,12 @@ import edu.psu.pjm6196.inventorymanager.utils.PreferenceUtils;
 
 /**
  * Abstract base class for vision frame processors. Subclasses need to implement {@link
- * #onSuccess(Object, GraphicOverlay)} to define what they want to with the detection results and
+ * #onSuccess(Object, Bitmap)} to define what they want to with the detection results and
  * {@link #detectInImage(InputImage)} to specify the detector object.
  *
  * @param <T> The type of the detected feature.
  */
 public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
-
-    protected static final String MANUAL_TESTING_LOG = "VisionProcessorBaseTesting";
-    protected static final String DEBUG_GRAPHIC_KEY = "INFO_GRAPHIC";
-    protected static final String IMAGE_GRAPHIC_KEY = "IMAGE_GRAPHIC";
     private static final String TAG = "VisionProcessorBase";
     private final ActivityManager activityManager;
     private final Timer fpsTimer = new Timer();
@@ -330,28 +324,11 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
                         temperatureMonitor.logTemperature();
                     }
 
-                    if (requiresReDraw())
-                        graphicOverlay.clear();
-
-                    // some of this code was adapted from the blog post: https://medium.com/swlh/introduction-to-androids-camerax-with-java-ca384c522c5
-                    if (originalCameraImage != null) {
-                        graphicOverlay.add(
-                            IMAGE_GRAPHIC_KEY,
-                            new CameraImageGraphic(graphicOverlay, originalCameraImage)
-                        );
-                    }
-
-                    VisionProcessorBase.this.onSuccess(results, graphicOverlay);
-                    if (PreferenceUtils.showDetectionInfo(graphicOverlay.getContext())) {
-                        graphicOverlay.add(
-                            DEBUG_GRAPHIC_KEY,
-                            new TelemetryInfoGraphic(
-                                graphicOverlay,
-                                currentFrameLatencyMs,
-                                currentDetectorLatencyMs,
-                                shouldShowFps ? framesPerSecond : null));
-                    }
-                    graphicOverlay.postInvalidate();
+                    VisionProcessorBase.this.onSuccess(results, originalCameraImage);
+                    VisionProcessorBase.this.onTelemetryUpdate(
+                        currentFrameLatencyMs,
+                        currentDetectorLatencyMs,
+                        shouldShowFps ? framesPerSecond : null);
                 })
             .addOnFailureListener(
                 executor,
@@ -402,7 +379,9 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
                 MlKitException.INVALID_ARGUMENT));
     }
 
-    protected abstract void onSuccess(@NonNull T results, @NonNull GraphicOverlay graphicOverlay);
+    protected abstract void onSuccess(@NonNull T results, @NonNull Bitmap image);
+
+    protected abstract void onTelemetryUpdate(long frameLatency, long detectorLatency, int framesPerSecond);
 
     protected abstract void onFailure(@NonNull Exception e);
 

@@ -19,18 +19,22 @@ package edu.psu.pjm6196.inventorymanager.barcodescanner.graphics;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-/** Draw camera image to background. */
+import edu.psu.pjm6196.inventorymanager.barcodescanner.GraphicOverlay;
+
+/**
+ * Draw camera image to background.
+ */
 public class CameraImageGraphic extends Graphic {
 
-  private final Bitmap bitmap;
+    private final Bitmap bitmap;
 
-  public CameraImageGraphic(GraphicOverlay overlay, Bitmap bitmap) {
-    super(overlay);
-    this.bitmap = bitmap;
-  }
+    public CameraImageGraphic(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
 
-  @Override
-  public void draw(Canvas canvas) {
-    canvas.drawBitmap(bitmap, getTransformationMatrix(), null);
-  }
+    @Override
+    public void draw(Canvas canvas, GraphicOverlay overlay) {
+        if (bitmap != null)
+            canvas.drawBitmap(bitmap, overlay.getTransformationMatrix(), null);
+    }
 }
