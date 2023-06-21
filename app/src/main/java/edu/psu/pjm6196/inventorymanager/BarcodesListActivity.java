@@ -35,6 +35,7 @@ import java.util.List;
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeViewModel;
+import edu.psu.pjm6196.inventorymanager.scanners.ScanActivity;
 import edu.psu.pjm6196.inventorymanager.utils.Filters;
 
 public class BarcodesListActivity extends ActivityBase {
@@ -68,9 +69,6 @@ public class BarcodesListActivity extends ActivityBase {
         }
 
         // TODO: restore filtered by specific listener
-//        if (savedInstanceState != null) {
-//            filtered = savedInstanceState.getBoolean("filtered", false);
-//        }
 
         createActivityResultContracts();
 
@@ -137,8 +135,6 @@ public class BarcodesListActivity extends ActivityBase {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FILTER_LIST);
-
                     return intent;
                 }
 
@@ -162,7 +158,6 @@ public class BarcodesListActivity extends ActivityBase {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL);
                     return intent;
                 }
 

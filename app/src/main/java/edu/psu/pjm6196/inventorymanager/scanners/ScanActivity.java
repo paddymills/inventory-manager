@@ -1,9 +1,9 @@
-package edu.psu.pjm6196.inventorymanager;
+package edu.psu.pjm6196.inventorymanager.scanners;
 
 import android.os.Bundle;
 
 // TODO: make ScanActivity an abstract Activity to be extended for each use case
-public class ScanActivity extends ScanActivityBase {
+public class ScanActivity extends BaseScanActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

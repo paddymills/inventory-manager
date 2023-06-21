@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ScanActivity">
+    tools:context=".scanners.ScanActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -27,7 +27,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
-    <edu.psu.pjm6196.inventorymanager.barcodescanner.graphics.GraphicOverlay
+    <edu.psu.pjm6196.inventorymanager.barcodescanner.GraphicOverlay
         android:id="@+id/scan_overlay"
         android:layout_width="0dp"
         android:layout_height="0dp"

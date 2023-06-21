@@ -17,6 +17,8 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import java.util.HashSet;
 
+import edu.psu.pjm6196.inventorymanager.scanners.ScanActivity;
+
 public class SettingsActivity extends ActivityBase {
 
     @Override

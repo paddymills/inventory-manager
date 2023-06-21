@@ -27,12 +27,12 @@
             android:name=".BarcodesListActivity"
             android:exported="false" />
         <activity
-            android:name=".ScanActivity"
+            android:name=".scanners.ScanActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TakeInventoryActivity"
+            android:name=".scanners.TakeInventoryActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />

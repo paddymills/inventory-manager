@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
+import edu.psu.pjm6196.inventorymanager.scanners.ScanActivity;
+import edu.psu.pjm6196.inventorymanager.scanners.TakeInventoryActivity;
 
 public class MainActivity extends ActivityBase {
 
@@ -33,8 +35,6 @@ public class MainActivity extends ActivityBase {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.MOVE_MATERIAL);
-
                     return intent;
                 }
 
@@ -56,8 +56,6 @@ public class MainActivity extends ActivityBase {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.FIND_MATERIAL);
-
                     return intent;
                 }
 
@@ -78,7 +76,11 @@ public class MainActivity extends ActivityBase {
                 v -> startActivity(new Intent(this, BarcodesListActivity.class)));
         findViewById(R.id.btn_move)
             .setOnClickListener(
+                // TODO: move material activity
                 v -> getId.launch(new Intent(this, ScanActivity.class)));
+        findViewById(R.id.btn_issue)
+            .setOnClickListener(
+                v -> startActivity(new Intent(this, AddBarcodeActivity.class)));
         findViewById(R.id.btn_launch_scanner)
             .setOnClickListener(
                 v -> findMaterials.launch(new Intent(this, ScanActivity.class)));

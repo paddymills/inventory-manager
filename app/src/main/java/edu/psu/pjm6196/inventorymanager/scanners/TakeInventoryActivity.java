@@ -1,4 +1,4 @@
-package edu.psu.pjm6196.inventorymanager;
+package edu.psu.pjm6196.inventorymanager.scanners;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +9,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-public class TakeInventoryActivity extends ScanActivityBase {
+import edu.psu.pjm6196.inventorymanager.BarcodesListActivity;
+import edu.psu.pjm6196.inventorymanager.R;
+
+public class TakeInventoryActivity extends BaseScanActivity {
     public static final String TAG = "TakeInventory";
 
     @Override
@@ -23,7 +26,7 @@ public class TakeInventoryActivity extends ScanActivityBase {
 
     @Override
     public void onClick(View view) {
-        ArrayList<String> ids = (ArrayList<String>) barcodeProcessor.getScannedBarcodeIds();
+        ArrayList<String> ids = (ArrayList<String>) barcodes.getScannedBarcodeIds();
 
         Log.d(TAG, "Scanned barcodes: " + ids);
 

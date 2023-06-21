@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import edu.psu.pjm6196.inventorymanager.db.Barcode;
 import edu.psu.pjm6196.inventorymanager.db.BarcodeDatabase;
 import edu.psu.pjm6196.inventorymanager.db.Material;
+import edu.psu.pjm6196.inventorymanager.scanners.AddBarcodeScanActivity;
 
 public class AddBarcodeActivity extends ActivityBase {
 
@@ -38,7 +39,7 @@ public class AddBarcodeActivity extends ActivityBase {
             this.mode = intent.getIntExtra("mode", ADD_MODE);
 
         if (mode == EDIT_MODE) {
-            barcode = intent.getParcelableExtra("barcode");
+            barcode = intent.getParcelableExtra("barcode", Barcode.class);
             setFormValues();
         }
 
@@ -47,7 +48,6 @@ public class AddBarcodeActivity extends ActivityBase {
                 @NonNull
                 @Override
                 public Intent createIntent(@NonNull Context context, Intent intent) {
-                    intent.putExtra("calling_activity_intent", ScanActivity.CallingActivityIntent.ADD_MATERIAL);
                     return intent;
                 }
 
@@ -65,7 +65,8 @@ public class AddBarcodeActivity extends ActivityBase {
                     if (BarcodeDatabase
                         .getDatabase(this)
                         .barcodeDAO()
-                        .getByIdHash(scannedBarcode) != null) {
+                        .getByIdHash(scannedBarcode) != null
+                    )
                         new AlertDialog.Builder(this)
                             .setMessage("Barcode id `" + scannedBarcode + "` already exists in the database")
                             .setPositiveButton("Scan a different barcode",
@@ -76,9 +77,9 @@ public class AddBarcodeActivity extends ActivityBase {
                             })
                             .create()
                             .show();
-                    }
 
-                    ((TextView) findViewById(R.id.barcode_id)).setText(scannedBarcode);
+                    else
+                        ((TextView) findViewById(R.id.barcode_id)).setText(scannedBarcode);
                 }
             });
 
@@ -87,13 +88,14 @@ public class AddBarcodeActivity extends ActivityBase {
 
         findViewById(R.id.btn_set_barcode)
             .setOnClickListener(
-                v -> getBarcodeId.launch(new Intent(this, ScanActivity.class)));
+                v -> getBarcodeId.launch(new Intent(this, AddBarcodeScanActivity.class)));
 
         findViewById(R.id.btn_submit)
             .setOnClickListener(v -> {
                 if (getFormValuesChecked()) {
                     if (mode == ADD_MODE) {
-                        // TODO: validate barcode does not exist if in database
+                        // because we validated barcode does not exist on result return,
+                        //   we can assume that `barcode` is not in database
                         BarcodeDatabase.insert(barcode);
                     } else {    // edit mode
                         BarcodeDatabase.update(barcode);
@@ -130,7 +132,7 @@ public class AddBarcodeActivity extends ActivityBase {
         super.onRestoreInstanceState(instanceState);
         this.mode = instanceState.getInt("mode", ADD_MODE);
 
-        barcode = instanceState.getParcelable("barcode");
+        barcode = instanceState.getParcelable("barcode", Barcode.class);
         setFormValues();
     }
 
