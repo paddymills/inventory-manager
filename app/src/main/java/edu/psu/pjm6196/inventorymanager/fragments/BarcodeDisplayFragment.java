@@ -74,9 +74,13 @@ public class BarcodeDisplayFragment extends DialogFragment {
     }
 
     private void delete(Barcode barcode) {
+        CharSequence[] multiChoiceText = {new StringBuffer("Issue Material in SAP")};
+        boolean[] checked = {false};
+
         new AlertDialog.Builder(getContext())
             .setTitle("Confirm delete")
             .setMessage("Are you sure you want to delete barcode " + barcode.id_hash)
+            .setMultiChoiceItems(multiChoiceText, checked, (dialog, id, value) -> Log.d(TAG, "post issue: " + value))
             .setPositiveButton("Yes", (d, i) -> {
                 BarcodeDatabase.delete(barcode);
 
